@@ -226,23 +226,6 @@ const PlayerPortal = ({
                       <p className="text-xl font-bold text-green-400">3</p>
                     </div>
                   </div>
-
-                  <div className="bg-gray-800/60 rounded-lg p-3">
-                    <h4 className="text-sm font-medium text-gray-400 mb-2">
-                      Achievements
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      <Badge className="bg-blue-500/20 text-blue-300 border-blue-500">
-                        First Win
-                      </Badge>
-                      <Badge className="bg-purple-500/20 text-purple-300 border-purple-500">
-                        Perfect Guess
-                      </Badge>
-                      <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500">
-                        Early Adopter
-                      </Badge>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
             </TabsContent>

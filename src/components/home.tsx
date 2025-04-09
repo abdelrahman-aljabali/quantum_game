@@ -130,49 +130,6 @@ const Home = () => {
             Quantum Consensus
           </h1>
         </div>
-
-        <div className="flex items-center space-x-4">
-          {/* Game phase indicator */}
-          <motion.div
-            className="flex items-center px-4 py-2 rounded-full bg-white/10 text-white"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            key={gamePhase} // Re-animate when phase changes
-          >
-            {phaseInfo.icon}
-            <span>{phaseInfo.text}</span>
-          </motion.div>
-
-          {/* Game stats */}
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center px-3 py-1 rounded-full bg-white/10">
-              <Users className="h-4 w-4 mr-1 text-blue-400" />
-              <span className="text-sm">{playerCount}</span>
-            </div>
-            <div className="flex items-center px-3 py-1 rounded-full bg-white/10">
-              <Clock className="h-4 w-4 mr-1 text-orange-400" />
-              <span className="text-sm">{timeRemaining}s</span>
-            </div>
-          </div>
-
-          {/* Rules button */}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full bg-white/10 hover:bg-white/20"
-                >
-                  <Info className="h-5 w-5 text-white" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Game Rules</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
       </header>
 
       {/* Main content */}
