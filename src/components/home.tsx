@@ -1,7 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Sparkles, Zap, Trophy, Users, Clock, Info } from "lucide-react";
 import GameInterface from "./GameInterface";
+
+// Define GamePhase enum to match the contract
+enum GamePhase {
+  WAITING_FOR_PLAYERS = 0,
+  GAME_STARTING = 1,
+  SUBMISSIONS_OPEN = 2,
+  EVALUATING_RESULTS = 3,
+  GAME_ENDED = 4,
+}
 import PlayerPortal from "./PlayerPortal";
 import { Button } from "./ui/button";
 import {
@@ -10,75 +19,117 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
-
-// Game phases
-enum GamePhase {
-  WAITING = "waiting",
-  SUBMISSION = "submission",
-  CALCULATING = "calculating",
-  RESULTS = "results",
-}
+import { useEthereum } from "@/contexts/EthereumContext";
 
 const Home = () => {
-  const [gamePhase, setGamePhase] = useState<GamePhase>(GamePhase.WAITING);
-  const [playerCount, setPlayerCount] = useState<number>(0);
-  const [timeRemaining, setTimeRemaining] = useState<number>(60);
   const [isWalletConnected, setIsWalletConnected] = useState<boolean>(false);
 
-  // For demo purposes - cycle through game phases
-  const advanceGamePhase = () => {
-    switch (gamePhase) {
-      case GamePhase.WAITING:
-        setGamePhase(GamePhase.SUBMISSION);
-        break;
-      case GamePhase.SUBMISSION:
-        setGamePhase(GamePhase.CALCULATING);
-        break;
-      case GamePhase.CALCULATING:
-        setGamePhase(GamePhase.RESULTS);
-        break;
-      case GamePhase.RESULTS:
-        setGamePhase(GamePhase.WAITING);
-        break;
+  // Use Ethereum context
+  const {
+    isConnected,
+    gamePhase: blockchainGamePhase,
+    playerCount: blockchainPlayerCount,
+    timeRemaining: blockchainTimeRemaining,
+    refreshGameState,
+  } = useEthereum();
+
+  // Map numeric game phase from blockchain to enum
+  const mapBlockchainPhaseToEnum = (phase: number | null): GamePhase => {
+    if (phase === null) return GamePhase.WAITING_FOR_PLAYERS;
+
+    switch (phase) {
+      case 0:
+        return GamePhase.WAITING_FOR_PLAYERS;
+      case 1:
+        return GamePhase.GAME_STARTING;
+      case 2:
+        return GamePhase.SUBMISSIONS_OPEN;
+      case 3:
+        return GamePhase.EVALUATING_RESULTS;
+      case 4:
+        return GamePhase.GAME_ENDED;
+      default:
+        return GamePhase.WAITING_FOR_PLAYERS;
     }
   };
+
+  // Get game phase from blockchain or use default
+  const gamePhase =
+    blockchainGamePhase !== null
+      ? mapBlockchainPhaseToEnum(blockchainGamePhase)
+      : GamePhase.WAITING_FOR_PLAYERS;
+
+  // Get player count and time remaining from blockchain or use defaults
+  const playerCount = blockchainPlayerCount || 0;
+  const timeRemaining = blockchainTimeRemaining || 60;
+
+  // Refresh game state periodically
+  useEffect(() => {
+    // Initial refresh
+    refreshGameState();
+
+    // Set up interval to refresh game state
+    const interval = setInterval(() => {
+      refreshGameState();
+    }, 5000); // Every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [refreshGameState]);
+
+  // Update wallet connection status
+  useEffect(() => {
+    setIsWalletConnected(isConnected);
+  }, [isConnected]);
 
   // Background color based on game phase
   const getBgColor = () => {
     switch (gamePhase) {
-      case GamePhase.WAITING:
+      case GamePhase.WAITING_FOR_PLAYERS:
+      case GamePhase.GAME_STARTING:
         return "bg-gradient-to-br from-blue-900 to-indigo-900";
-      case GamePhase.SUBMISSION:
+      case GamePhase.SUBMISSIONS_OPEN:
         return "bg-gradient-to-br from-purple-900 to-violet-900";
-      case GamePhase.CALCULATING:
+      case GamePhase.EVALUATING_RESULTS:
         return "bg-gradient-to-br from-orange-900 to-amber-900";
-      case GamePhase.RESULTS:
+      case GamePhase.GAME_ENDED:
         return "bg-gradient-to-br from-emerald-900 to-teal-900";
+      default:
+        return "bg-gradient-to-br from-blue-900 to-indigo-900";
     }
   };
 
   // Game phase indicator text and icon
   const getPhaseInfo = () => {
     switch (gamePhase) {
-      case GamePhase.WAITING:
+      case GamePhase.WAITING_FOR_PLAYERS:
         return {
           text: "Waiting for Players",
           icon: <Users className="h-5 w-5 mr-2" />,
         };
-      case GamePhase.SUBMISSION:
+      case GamePhase.GAME_STARTING:
+        return {
+          text: "Game Starting Soon",
+          icon: <Users className="h-5 w-5 mr-2" />,
+        };
+      case GamePhase.SUBMISSIONS_OPEN:
         return {
           text: "Submission Phase",
           icon: <Zap className="h-5 w-5 mr-2" />,
         };
-      case GamePhase.CALCULATING:
+      case GamePhase.EVALUATING_RESULTS:
         return {
           text: "Calculating Results",
           icon: <Sparkles className="h-5 w-5 mr-2" />,
         };
-      case GamePhase.RESULTS:
+      case GamePhase.GAME_ENDED:
         return {
           text: "Results Ready",
           icon: <Trophy className="h-5 w-5 mr-2" />,
+        };
+      default:
+        return {
+          text: "Waiting for Players",
+          icon: <Users className="h-5 w-5 mr-2" />,
         };
     }
   };
@@ -136,21 +187,12 @@ const Home = () => {
       <main className="flex-1 flex p-4 gap-4 pr-6 relative z-10 overflow-hidden">
         {/* Game interface */}
         <div className="flex-1">
-          <GameInterface
-            gamePhase={gamePhase}
-            playerCount={playerCount}
-            timeRemaining={timeRemaining}
-            advanceGamePhase={advanceGamePhase}
-          />
+          <GameInterface />
         </div>
 
         {/* Player portal */}
         <div className="w-80 mr-5">
-          <PlayerPortal
-            isWalletConnected={isWalletConnected}
-            setIsWalletConnected={setIsWalletConnected}
-            gamePhase={gamePhase}
-          />
+          <PlayerPortal />
         </div>
       </main>
 

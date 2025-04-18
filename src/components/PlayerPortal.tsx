@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Wallet,
   Trophy,
@@ -19,50 +20,64 @@ import {
   Users,
   ArrowRight,
   LogOut,
+  AlertCircle,
+  Coins,
 } from "lucide-react";
+import { useEthereum } from "@/contexts/EthereumContext";
+import { ethers } from "ethers";
 
-interface PlayerPortalProps {
-  isConnected?: boolean;
-  walletAddress?: string;
-  playerCount?: number;
-  gamePhase?: "waiting" | "submission" | "calculating" | "results";
-  onConnectWallet?: () => void;
-  onDisconnectWallet?: () => void;
-}
+interface PlayerPortalProps {}
 
-const PlayerPortal = ({
-  isConnected = false,
-  walletAddress = "0x1234...5678",
-  playerCount = 0,
-  gamePhase = "waiting",
-  onConnectWallet = () => {},
-  onDisconnectWallet = () => {},
-}: PlayerPortalProps) => {
+const PlayerPortal = ({}: PlayerPortalProps) => {
   const [activeTab, setActiveTab] = useState("profile");
 
-  // Mock data for leaderboard
-  const leaderboardData = [
-    { rank: 1, name: "CryptoKing", wins: 24, avatar: "JK" },
-    { rank: 2, name: "BlockchainQueen", wins: 18, avatar: "BQ" },
-    { rank: 3, name: "EtherMaster", wins: 15, avatar: "EM" },
-    { rank: 4, name: "TokenTitan", wins: 12, avatar: "TT" },
-    { rank: 5, name: "SolidityWizard", wins: 10, avatar: "SW" },
-    { rank: 6, name: "Web3Warrior", wins: 8, avatar: "WW" },
-    { rank: 7, name: "NFTNinja", wins: 7, avatar: "NN" },
-    { rank: 8, name: "DeFiDragon", wins: 6, avatar: "DD" },
-    { rank: 9, name: "GasGuru", wins: 5, avatar: "GG" },
-    { rank: 10, name: "MintMaster", wins: 4, avatar: "MM" },
-  ];
+  // Use Ethereum context
+  const {
+    account,
+    isConnected,
+    isConnecting,
+    connectWallet,
+    disconnectWallet,
+    playerCount,
+    gamePhase: contextGamePhase,
+    error,
+    joinGame,
+    entryFee,
+    hasJoined,
+    hasSubmitted,
+    timeRemaining,
+    currentGameContract,
+  } = useEthereum();
 
-  // Mock data for game history
-  const gameHistoryData = [
-    { id: 1, date: "2025-03-15", yourNumber: 420, average: 630, winner: false },
-    { id: 2, date: "2025-03-12", yourNumber: 333, average: 500, winner: true },
-    { id: 3, date: "2025-03-10", yourNumber: 250, average: 375, winner: false },
-    { id: 4, date: "2025-03-08", yourNumber: 420, average: 630, winner: false },
-    { id: 5, date: "2025-03-05", yourNumber: 180, average: 270, winner: true },
-    { id: 6, date: "2025-03-01", yourNumber: 500, average: 750, winner: false },
-  ];
+  // Map numeric game phase to string
+  const getGamePhaseString = ():
+    | "waiting"
+    | "submission"
+    | "calculating"
+    | "results" => {
+    switch (contextGamePhase) {
+      case 0: // WAITING_FOR_PLAYERS
+        return "waiting";
+      case 1: // GAME_STARTING
+        return "waiting";
+      case 2: // SUBMISSIONS_OPEN
+        return "submission";
+      case 3: // EVALUATING_RESULTS
+        return "calculating";
+      case 4: // GAME_ENDED
+        return "results";
+      default:
+        return "waiting";
+    }
+  };
+
+  const gamePhase = getGamePhaseString();
+
+  // Format wallet address for display
+  const formatAddress = (address: string | null) => {
+    if (!address) return "";
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  };
 
   // Border color based on game phase
   const getBorderColor = () => {
@@ -101,7 +116,7 @@ const PlayerPortal = ({
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5 }}
-      className={`bg-black/90 backdrop-blur-sm w-[350px] h-[800px] rounded-xl border-2 ${getBorderColor()} ${getGlowEffect()} overflow-hidden shadow-xl`}
+      className={`bg-black/90 backdrop-blur-sm w-[350px] h-[750px] rounded-xl border-2 ${getBorderColor()} ${getGlowEffect()} overflow-hidden shadow-xl`}
     >
       <div className="p-4 h-full flex flex-col">
         {/* Header with wallet info */}
@@ -116,36 +131,53 @@ const PlayerPortal = ({
               <div className="flex items-center">
                 <Avatar className="h-8 w-8 mr-2 border border-blue-500">
                   <AvatarImage
-                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${walletAddress}`}
+                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${account}`}
                   />
                   <AvatarFallback>WL</AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="text-xs text-gray-400">Connected Wallet</p>
                   <p className="text-sm text-white font-mono">
-                    {walletAddress}
+                    {formatAddress(account)}
                   </p>
                 </div>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={onDisconnectWallet}
+                onClick={disconnectWallet}
                 className="h-8 text-red-400 hover:text-red-300 hover:bg-red-900/20"
               >
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
           ) : (
-            <Button
-              onClick={onConnectWallet}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white"
-            >
-              Connect Wallet
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            <div className="text-center">
+              <Button
+                onClick={connectWallet}
+                disabled={isConnecting}
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white"
+              >
+                {isConnecting ? "Connecting..." : "Connect Wallet"}
+                {!isConnecting && <ArrowRight className="ml-2 h-4 w-4" />}
+              </Button>
+              <p className="text-xs text-gray-400 mt-2">
+                Connect your wallet to join the game
+              </p>
+            </div>
           )}
         </div>
+
+        {/* Error message */}
+        {error && (
+          <Alert
+            variant="destructive"
+            className="mb-4 bg-red-900/40 border-red-800"
+          >
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="text-xs">{error}</AlertDescription>
+          </Alert>
+        )}
 
         {/* Game status */}
         <div className="mb-6 bg-gray-900/60 rounded-lg p-3">
@@ -175,170 +207,144 @@ const PlayerPortal = ({
           </div>
         </div>
 
+        {/* Game action button (Create Game or Join Game based on current state) */}
+        {isConnected && gamePhase === "waiting" && !hasJoined && (
+          <div className="mb-6">
+            <Button
+              onClick={joinGame}
+              disabled={isConnecting || !isConnected}
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isConnecting ? (
+                <span className="flex items-center justify-center w-full">
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Processing...
+                </span>
+              ) : !isConnected ? (
+                <>
+                  <Coins className="mr-2 h-4 w-4" />
+                  Connect Wallet First
+                </>
+              ) : (
+                <>
+                  <Coins className="mr-2 h-4 w-4" />
+                  {currentGameContract
+                    ? `Join Game ${entryFee ? `(${entryFee} ETH)` : ""}`
+                    : "Create New Game"}
+                </>
+              )}
+            </Button>
+            {entryFee && currentGameContract && (
+              <p className="text-xs text-center mt-2 text-gray-400">
+                Entry fee: {entryFee} ETH
+              </p>
+            )}
+            {!currentGameContract && (
+              <p className="text-xs text-center mt-2 text-gray-400">
+                No active game found. Create a new one to start playing!
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Already joined indicator */}
+        {isConnected && hasJoined && (
+          <div className="mb-6 bg-green-900/30 border border-green-700 rounded-lg p-3 text-center">
+            <p className="text-green-400 font-medium">
+              <Coins className="inline-block mr-2 h-4 w-4" />
+              You've joined the game
+            </p>
+            {hasSubmitted && (
+              <p className="text-xs text-green-500 mt-1">
+                Your number has been submitted
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Tabs for profile, leaderboard, history */}
-        <Tabs
-          defaultValue="profile"
-          className="flex-1 flex flex-col"
-          onValueChange={setActiveTab}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="flex-1"
         >
-          <TabsList className="grid grid-cols-3 mb-4">
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
-          </TabsList>
+          <Card className="bg-gray-900/60 border-gray-800 h-full">
+            <CardHeader>
+              <CardTitle className="text-white text-center font-bold">
+                Player Profile
+              </CardTitle>
 
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="flex-1"
-          >
-            <TabsContent value="profile" className="h-full">
-              <Card className="bg-gray-900/60 border-gray-800 h-full">
-                <CardHeader>
-                  <CardTitle>Player Profile</CardTitle>
-                  <CardDescription>
-                    Your game statistics and achievements
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col items-center mb-6">
-                    <Avatar className="h-20 w-20 mb-4 border-2 border-blue-500">
-                      <AvatarImage
-                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${walletAddress}`}
-                      />
-                      <AvatarFallback>WL</AvatarFallback>
-                    </Avatar>
-                    <h3 className="text-lg font-bold text-white">
-                      CryptoPlayer
-                    </h3>
-                    <p className="text-sm text-gray-400">Joined Mar 2025</p>
+              <CardDescription className="text-center">
+                Your game statistics and achievements
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col items-center mb-6">
+                <Avatar className="h-20 w-20 mb-4 border-2 border-blue-500">
+                  <AvatarImage
+                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${account || "guest"}`}
+                  />
+                  <AvatarFallback>WL</AvatarFallback>
+                </Avatar>
+                <h3 className="text-lg font-bold text-white">
+                  {account ? "Blockchain Player" : "Guest"}
+                </h3>
+                <p className="text-sm text-gray-400">Joined Mar 2025</p>
+              </div>
+
+              {/* Player info section */}
+              <div className="bg-gray-800/60 rounded-lg p-3 text-center mb-6">
+                <p className="text-sm text-gray-400">Status</p>
+                <p className="text-xl font-bold text-white">
+                  {!account
+                    ? "Connect Wallet"
+                    : !hasJoined
+                      ? "Ready to Join"
+                      : !hasSubmitted && gamePhase === "submission"
+                        ? "Submit Your Number"
+                        : hasSubmitted
+                          ? "Waiting for Results"
+                          : "Ready to Play"}
+                </p>
+              </div>
+
+              {/* Game timer */}
+              {timeRemaining > 0 &&
+                (gamePhase === "waiting" || gamePhase === "submission") && (
+                  <div className="bg-gray-800/60 rounded-lg p-3 text-center mb-6">
+                    <p className="text-sm text-gray-400">
+                      {gamePhase === "waiting"
+                        ? "Game starts in"
+                        : "Submission ends in"}
+                    </p>
+                    <p className="text-xl font-bold text-white">
+                      {timeRemaining} seconds
+                    </p>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-gray-800/60 rounded-lg p-3 text-center">
-                      <p className="text-sm text-gray-400">Games Played</p>
-                      <p className="text-xl font-bold text-white">24</p>
-                    </div>
-                    <div className="bg-gray-800/60 rounded-lg p-3 text-center">
-                      <p className="text-sm text-gray-400">Wins</p>
-                      <p className="text-xl font-bold text-green-400">3</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="leaderboard" className="h-full">
-              <Card className="bg-gray-900/60 border-gray-800 h-full">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Trophy className="mr-2 h-5 w-5 text-yellow-400" />
-                    Leaderboard
-                  </CardTitle>
-                  <CardDescription>Top players by wins</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ScrollArea className="h-[380px] pr-4">
-                    <div className="space-y-2">
-                      {leaderboardData.map((player) => (
-                        <div
-                          key={player.rank}
-                          className={`flex items-center p-3 rounded-lg ${player.rank <= 3 ? "bg-gradient-to-r from-gray-800/80 to-gray-700/40" : "bg-gray-800/40"}`}
-                        >
-                          <div
-                            className={`
-                            w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3
-                            ${player.rank === 1 ? "bg-yellow-500/20 text-yellow-300 border border-yellow-500" : ""}
-                            ${player.rank === 2 ? "bg-gray-400/20 text-gray-300 border border-gray-400" : ""}
-                            ${player.rank === 3 ? "bg-amber-600/20 text-amber-300 border border-amber-600" : ""}
-                            ${player.rank > 3 ? "bg-gray-700 text-gray-400" : ""}
-                          `}
-                          >
-                            {player.rank}
-                          </div>
-                          <Avatar className="h-8 w-8 mr-3">
-                            <AvatarImage
-                              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${player.name}`}
-                            />
-                            <AvatarFallback>{player.avatar}</AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-white">
-                              {player.name}
-                            </p>
-                          </div>
-                          <div className="flex items-center">
-                            <Trophy className="h-3 w-3 text-yellow-400 mr-1" />
-                            <span className="text-sm font-medium text-white">
-                              {player.wins}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="history" className="h-full">
-              <Card className="bg-gray-900/60 border-gray-800 h-full">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <History className="mr-2 h-5 w-5 text-blue-400" />
-                    Game History
-                  </CardTitle>
-                  <CardDescription>Your recent games</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ScrollArea className="h-[380px] pr-4">
-                    <div className="space-y-3">
-                      {gameHistoryData.map((game) => (
-                        <div
-                          key={game.id}
-                          className={`p-3 rounded-lg ${game.winner ? "bg-green-900/20 border border-green-800" : "bg-gray-800/40"}`}
-                        >
-                          <div className="flex justify-between items-center mb-2">
-                            <p className="text-xs text-gray-400">
-                              Game #{game.id}
-                            </p>
-                            <p className="text-xs text-gray-400">{game.date}</p>
-                            {game.winner && (
-                              <Badge className="bg-green-500/20 text-green-300 border-green-500">
-                                Winner
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="text-xs text-gray-500">
-                                Your Number
-                              </p>
-                              <p className="text-lg font-bold text-white">
-                                {game.yourNumber}
-                              </p>
-                            </div>
-                            <ArrowRight className="h-4 w-4 text-gray-500" />
-                            <div>
-                              <p className="text-xs text-gray-500">
-                                2/3 Average
-                              </p>
-                              <p className="text-lg font-bold text-white">
-                                {game.average}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </motion.div>
-        </Tabs>
+                )}
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </motion.div>
   );

@@ -2,43 +2,202 @@ import React, { useState, useEffect } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { ArrowRight, Check, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  Sparkles,
+  Loader2,
+  KeyRound,
+  Eye,
+} from "lucide-react";
+import { useEthereum } from "@/contexts/EthereumContext";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ethers } from "ethers";
+import { Input } from "@/components/ui/input";
 
 interface NumberSelectorProps {
-  onSubmit?: (value: number) => void;
+  onSelectNumber?: (number: number) => void;
+  selectedNumber?: number | null;
   isSubmissionPhase?: boolean;
   timeRemaining?: number;
+  isRevealPhase?: boolean;
 }
 
 const NumberSelector = ({
-  onSubmit = () => {},
-  isSubmissionPhase = true,
-  timeRemaining = 60,
+  onSelectNumber,
+  selectedNumber: propSelectedNumber,
+  isSubmissionPhase: propIsSubmissionPhase,
+  timeRemaining: propTimeRemaining,
+  isRevealPhase: propIsRevealPhase,
 }: NumberSelectorProps) => {
   const [selectedValue, setSelectedValue] = useState<number>(500);
+  const [salt, setSalt] = useState<string>("");
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+  const [isRevealed, setIsRevealed] = useState<boolean>(false);
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isRevealing, setIsRevealing] = useState<boolean>(false);
+  const [committedHash, setCommittedHash] = useState<string>("");
+
+  // Use Ethereum context
+  const {
+    isConnected,
+    gamePhase,
+    timeRemaining: contextTimeRemaining,
+    submitNumber,
+    revealNumber,
+    hasSubmitted,
+    hasRevealed,
+    error,
+  } = useEthereum();
+
+  // Determine if we're in submission phase based on context or props
+  const isSubmissionPhase =
+    propIsSubmissionPhase !== undefined
+      ? propIsSubmissionPhase
+      : gamePhase === 2; // 2 = SUBMISSIONS_OPEN phase
+
+  // Determine if we're in reveal phase based on context or props
+  const isRevealPhase =
+    propIsRevealPhase !== undefined ? propIsRevealPhase : gamePhase === 3; // 3 = REVEAL_PHASE
+
+  // Use time remaining from context or props
+  const timeRemaining =
+    propTimeRemaining !== undefined ? propTimeRemaining : contextTimeRemaining;
 
   // Reset state when submission phase changes
   useEffect(() => {
     if (isSubmissionPhase) {
       setIsSubmitted(false);
+      setIsRevealed(false);
     }
-  }, [isSubmissionPhase]);
+
+    if (isRevealPhase) {
+      setIsRevealed(false);
+    }
+  }, [isSubmissionPhase, isRevealPhase]);
+
+  // Update state based on contract state
+  useEffect(() => {
+    setIsSubmitted(hasSubmitted);
+    setIsRevealed(hasRevealed);
+  }, [hasSubmitted, hasRevealed]);
+
+  // Update selected value when prop changes
+  useEffect(() => {
+    if (propSelectedNumber !== undefined && propSelectedNumber !== null) {
+      setSelectedValue(propSelectedNumber);
+    }
+  }, [propSelectedNumber]);
 
   const handleValueChange = (value: number[]) => {
     setSelectedValue(value[0]);
+    if (onSelectNumber) {
+      onSelectNumber(value[0]);
+    }
   };
 
-  const handleSubmit = () => {
-    onSubmit(selectedValue);
-    setIsSubmitted(true);
-    setShowConfetti(true);
+  // Generate a hash of the number and salt
+  const generateCommitHash = (number: number, salt: string): string => {
+    // Use ethers.js to hash the number and salt
+    // Convert number to string, concatenate with salt, and hash
+    return ethers.keccak256(ethers.toUtf8Bytes(`${number}${salt}`));
+  };
 
-    // Hide confetti after animation
-    setTimeout(() => {
-      setShowConfetti(false);
-    }, 2000);
+  // Handle salt input change
+  const handleSaltChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSalt(e.target.value);
+  };
+
+  // Handle commit (submit hashed number)
+  const handleCommit = async () => {
+    if (!isConnected) {
+      // Show a message to connect wallet
+      return;
+    }
+
+    // Validate number range
+    if (selectedValue < 0 || selectedValue > 1000) {
+      console.error("Number must be between 0 and 1000");
+      return;
+    }
+
+    // Validate salt
+    if (!salt) {
+      console.error("Please enter a salt value");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Generate hash
+      const hash = generateCommitHash(selectedValue, salt);
+      setCommittedHash(hash);
+
+      // Submit hash to blockchain
+      await submitNumber(hash);
+
+      // Show success UI
+      setIsSubmitted(true);
+      setShowConfetti(true);
+
+      // Hide confetti after animation
+      setTimeout(() => {
+        setShowConfetti(false);
+      }, 2000);
+
+      // If onSelectNumber callback is provided, call it
+      if (onSelectNumber) {
+        onSelectNumber(selectedValue);
+      }
+
+      // Store the number and salt in localStorage for later reveal
+      localStorage.setItem("gameCommitNumber", selectedValue.toString());
+      localStorage.setItem("gameCommitSalt", salt);
+    } catch (err) {
+      console.error("Error committing number:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle reveal
+  const handleReveal = async () => {
+    if (!isConnected) {
+      return;
+    }
+
+    setIsRevealing(true);
+
+    try {
+      // Get stored values if not already set
+      const numberToReveal =
+        selectedValue ||
+        Number(localStorage.getItem("gameCommitNumber") || "0");
+      const saltToReveal = salt || localStorage.getItem("gameCommitSalt") || "";
+
+      if (!numberToReveal || !saltToReveal) {
+        console.error("Could not find the committed number or salt");
+        return;
+      }
+
+      // Call reveal function on contract
+      await revealNumber(numberToReveal, saltToReveal);
+
+      // Update UI
+      setIsRevealed(true);
+      setShowConfetti(true);
+
+      // Hide confetti after animation
+      setTimeout(() => {
+        setShowConfetti(false);
+      }, 2000);
+    } catch (err) {
+      console.error("Error revealing number:", err);
+    } finally {
+      setIsRevealing(false);
+    }
   };
 
   return (
@@ -63,25 +222,25 @@ const NumberSelector = ({
         </motion.p>
       </div>
 
+      {/* Error message */}
+      {error && (
+        <Alert
+          variant="destructive"
+          className="mb-4 bg-red-900/40 border-red-800"
+        >
+          <AlertDescription className="text-xs">{error}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="relative mb-12">
         {/* Current value display */}
-        <motion.div
-          className="absolute -top-16 left-1/2 transform -translate-x-1/2"
-          animate={{
-            scale: [1, 1.05, 1],
-          }}
-          transition={{
-            duration: 0.5,
-            repeat: Infinity,
-            repeatType: "reverse",
-          }}
-        >
-          <div className="bg-slate-700 rounded-full h-24 w-24 flex items-center justify-center border-4 border-indigo-500 shadow-lg shadow-indigo-500/30">
+        <div className="text-center mb-8">
+          <div className="bg-slate-700 rounded-lg py-2 px-4 inline-block border-2 border-indigo-500 shadow-lg shadow-indigo-500/30">
             <span className="text-3xl font-bold text-white">
               {selectedValue}
             </span>
           </div>
-        </motion.div>
+        </div>
 
         {/* Number scale markers */}
         <div className="flex justify-between mb-2 px-2 text-slate-400 text-sm">
@@ -100,8 +259,8 @@ const NumberSelector = ({
             step={1}
             value={[selectedValue]}
             onValueChange={handleValueChange}
-            disabled={isSubmitted || !isSubmissionPhase}
-            className={`${isSubmitted ? "opacity-50" : ""}`}
+            disabled={isSubmitted || !isSubmissionPhase || isSubmitting}
+            className={`${isSubmitted || isSubmitting ? "opacity-50" : ""}`}
           />
         </div>
 
@@ -109,21 +268,58 @@ const NumberSelector = ({
         <div className="h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full opacity-70 blur-sm -mt-4 mb-8 animate-pulse"></div>
       </div>
 
-      {/* Submit button */}
+      {/* Salt input field - only show during submission phase */}
+      {isSubmissionPhase && !isSubmitted && (
+        <div className="mb-8">
+          <div className="text-center mb-4">
+            <h3 className="text-lg font-medium text-white mb-2">
+              Enter a Secret Salt
+            </h3>
+            <p className="text-sm text-slate-300">
+              This helps keep your number secure until reveal time
+            </p>
+          </div>
+          <div className="flex items-center gap-2 max-w-md mx-auto">
+            <KeyRound className="h-5 w-5 text-indigo-400" />
+            <Input
+              type="text"
+              placeholder="Enter a secret word or phrase"
+              value={salt}
+              onChange={handleSaltChange}
+              className="bg-slate-800 border-indigo-500 text-white"
+              disabled={isSubmitted || isSubmitting}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Action buttons */}
       <div className="flex justify-center">
-        {!isSubmitted ? (
+        {/* Commit button - show during submission phase if not submitted */}
+        {isSubmissionPhase && !isSubmitted ? (
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
-              onClick={handleSubmit}
-              disabled={!isSubmissionPhase}
+              onClick={handleCommit}
+              disabled={
+                !isSubmissionPhase || !isConnected || isSubmitting || !salt
+              }
               size="lg"
               className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3 px-8 rounded-full shadow-lg shadow-indigo-600/30 transition-all duration-300 flex items-center gap-2"
             >
-              <span>Submit Number</span>
-              <ArrowRight className="h-5 w-5" />
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span>Committing...</span>
+                </>
+              ) : (
+                <>
+                  <KeyRound className="h-5 w-5" />
+                  <span>Commit Number</span>
+                </>
+              )}
             </Button>
           </motion.div>
-        ) : (
+        ) : isSubmissionPhase && isSubmitted ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -135,14 +331,51 @@ const NumberSelector = ({
               className="bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-lg shadow-green-600/30 flex items-center gap-2"
             >
               <Check className="h-5 w-5" />
-              <span>Number Submitted</span>
+              <span>Number Committed</span>
             </Button>
           </motion.div>
-        )}
+        ) : isRevealPhase && !isRevealed ? (
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              onClick={handleReveal}
+              disabled={!isRevealPhase || !isConnected || isRevealing}
+              size="lg"
+              className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold py-3 px-8 rounded-full shadow-lg shadow-amber-600/30 transition-all duration-300 flex items-center gap-2"
+            >
+              {isRevealing ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span>Revealing...</span>
+                </>
+              ) : (
+                <>
+                  <Eye className="h-5 w-5" />
+                  <span>Reveal Number</span>
+                </>
+              )}
+            </Button>
+          </motion.div>
+        ) : isRevealPhase && isRevealed ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Button
+              disabled
+              size="lg"
+              className="bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-lg shadow-green-600/30 flex items-center gap-2"
+            >
+              <Check className="h-5 w-5" />
+              <span>Number Revealed</span>
+            </Button>
+          </motion.div>
+        ) : null}
       </div>
 
       {/* Time remaining indicator */}
-      {isSubmissionPhase && !isSubmitted && (
+      {((isSubmissionPhase && !isSubmitted) ||
+        (isRevealPhase && !isRevealed)) && (
         <motion.div
           className="mt-6 text-center text-slate-300 flex items-center justify-center gap-2"
           initial={{ opacity: 0 }}
@@ -151,6 +384,19 @@ const NumberSelector = ({
         >
           <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
           <span>Time remaining: {timeRemaining} seconds</span>
+        </motion.div>
+      )}
+
+      {/* Not connected warning */}
+      {!isConnected && isSubmissionPhase && (
+        <motion.div
+          className="mt-6 text-center text-amber-300 flex items-center justify-center gap-2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></div>
+          <span>Connect your wallet to submit a number</span>
         </motion.div>
       )}
 
@@ -184,14 +430,6 @@ const NumberSelector = ({
           ))}
         </div>
       )}
-
-      {/* Hint text */}
-      <div className="mt-8 text-center text-slate-400 text-sm">
-        <p>
-          Hint: Think strategically! What number do you think others will
-          choose?
-        </p>
-      </div>
     </div>
   );
 };
