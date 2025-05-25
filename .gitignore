@@ -39,3 +39,8 @@ game/ignition/deployments/
 # Vite/React/Tailwind temp files (Frontend)
 game/Frontend/.turbo/
 game/Frontend/.next/
+
+# Project planning files (keep local only)
+GOLDEN_RULES.md
+PLANNING.md
+TASK.md
