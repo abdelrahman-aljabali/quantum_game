@@ -69,7 +69,7 @@ function revealNumber(uint256 number, uint256 salt) external;
 
 ### 1. Repository klonen
 ```bash
-git clone https://github.com/IHR_USERNAME/quantum_game_DApp.git
+git clone https://github.com/adrianjustdoit58/quantum_game_DApp.git
 cd quantum_game_DApp
 ```
 
@@ -264,7 +264,7 @@ Dieses Projekt wurde für den Blockchain-Kurs entwickelt und steht unter MIT-Liz
 
 ## 🔗 Links & Ressourcen
 
-- **Repository**: [GitHub Link hier einfügen]
+- **Repository**: https://github.com/adrianjustdoit58/quantum_game_DApp
 - **Hardhat Dokumentation**: https://hardhat.org/docs
 - **Solidity Style Guide**: https://docs.soliditylang.org/en/latest/style-guide.html
 - **OpenZeppelin**: https://docs.openzeppelin.com/
@@ -272,7 +272,7 @@ Dieses Projekt wurde für den Blockchain-Kurs entwickelt und steht unter MIT-Liz
 
 ## 👥 Team
 
-**Entwickler**: [Eure Namen]  
+**Entwickler**: Abdelrahman Aljabali & Adrian Tobisch  
 **Kurs**: Blockchain Development  
 **Jahr**: 2025
 
