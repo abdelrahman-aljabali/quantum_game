@@ -1,0 +1,41 @@
+# Node modules (for both frontend and backend)
+**/node_modules/
+
+# Environment files
+**/.env
+**/.env.local
+
+# Build output
+**/dist/
+**/build/
+
+# Log files
+*.log
+
+# IDE/editor configs
+.vscode/
+.idea/
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Hardhat files (Solidity backend)
+game/cache/
+game/artifacts/
+
+# TypeChain generated types
+game/typechain/
+game/typechain-types/
+
+# Solidity coverage
+game/coverage/
+game/coverage.json
+
+# Hardhat Ignition deployments
+game/ignition/deployments/
+
+# Vite/React/Tailwind temp files (Frontend)
+game/Frontend/.turbo/
+game/Frontend/.next/

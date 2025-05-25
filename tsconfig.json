@@ -1,0 +1,17 @@
+// backend/tsconfig.json   ← create or overwrite
+// Non-essential configuration: TypeScript compiler settings for backend/Hardhat development
+// Purpose: Enables TypeScript support for smart contract scripts and Hardhat configuration
+{
+  "compilerOptions": {
+    /* --- ECMAScript target & modules --- */
+    "target": "es2020",
+    "module": "NodeNext", // keep NodeNext since you’re using ESM
+    "moduleResolution": "NodeNext",
+
+    /* --- Helpful defaults --- */
+    "strict": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "types": ["node", "hardhat"] // hardhat + Node globals
+  }
+}

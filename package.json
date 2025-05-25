@@ -1,0 +1,33 @@
+{
+  "_comment": "Backend Package Configuration - Smart Contract Development Environment",
+  "_purpose": "Defines dependencies and scripts for Hardhat-based Solidity development",
+  "_architecture": "Hardhat + OpenZeppelin + ethers.js for secure smart contract development",
+  
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  
+  "_scripts_explanation": "Development and deployment automation",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "export-abi": "ts-node scripts/exportABIs.ts",
+    "deploy": "hardhat run scripts/deploy.ts --network localhost"
+  },
+  
+  "keywords": ["blockchain", "solidity", "hardhat", "game-theory", "defi"],
+  "author": "Blockchain Course Student",
+  "license": "ISC",
+  "description": "2/3 Average Game DApp - Smart contracts for blockchain-based game theory experiment",
+  
+  "_dependencies_explanation": "Core blockchain development stack",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.3.0",
+    "@types/node": "^22.14.1",
+    "ethers": "^6.13.5",
+    "hardhat": "^2.23.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
