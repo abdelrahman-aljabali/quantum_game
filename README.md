@@ -1,208 +1,281 @@
-# 2/3 Average Game DApp
+# 2/3 Average Game - Blockchain DApp
 
-A blockchain-based multiplayer game implemented in Solidity where players submit numbers between 0-1000, and the winner is the player whose number is closest to 2/3 of the average of all submitted numbers. Built as a university blockchain course assignment with modern web technologies.
+> **Quantum Consensus**: Eine Blockchain-basierte Implementierung des 2/3 Average Game als dezentrale Anwendung (DApp)
 
-**Status:** ✅ **Production-Ready Implementation** - Core functionality complete, testing and testnet deployment pending.
+## 📝 Projektübersicht
 
-## Project Overview
+Das **2/3 Average Game** ist ein strategisches Spiel aus der Spieltheorie, bei dem Spieler eine Zahl zwischen 0-1000 wählen. Gewinner ist der Spieler, dessen Zahl am nächsten zu **2/3 des Durchschnitts aller Zahlen** liegt. Diese Implementierung nutzt Smart Contracts auf der Ethereum-Blockchain für faire, transparente und automatisierte Spielabwicklung.
 
-### Game Rules
-- Minimum 3 players required to start a game
-- Each player submits a number between 0-1000 (inclusive)
-- Winner is determined by whose number is closest to **2/3 of the average** of all submitted numbers
-- Players pay an entry fee to participate
-- Winner receives the prize pool, game operator receives service fee
-- Commit-reveal pattern ensures fair play despite blockchain transparency
+### 🎯 Spielregeln
+- **Mindestens 3 Spieler** müssen teilnehmen
+- Jeder Spieler wählt eine **Zahl zwischen 0-1000**
+- **Gewinner**: Spieler mit der Zahl am nächsten zu 2/3 des Durchschnitts
+- Bei **Gleichstand**: Zufallsmechanismus wählt den Gewinner
+- **Eintrittsgebühr**: Alle Spieler zahlen eine Teilnahmegebühr
+- **Preisgeld**: Gewinner erhält den Hauptteil, Spielleiter eine Servicegebühr
 
-### Academic Assignment
-This project fulfills the requirements for a blockchain development course, demonstrating:
-- Factory pattern implementation
-- Secure smart contract development
-- Gas optimization techniques  
-- Modern frontend development
-- Web3 integration best practices
+## 🏗️ Technologie-Stack
 
-Detailed requirements and architecture documentation: [`PLANNING.md`](PLANNING.md)  
-Task tracking and development progress: [`TASK.md`](TASK.md)
+### Smart Contracts
+- **Solidity ^0.8.x** - Smart Contract Entwicklung
+- **Hardhat** - Ethereum Entwicklungsumgebung
+- **OpenZeppelin** - Sichere Contract-Bibliotheken
+- **Factory Pattern** - Skalierbare Contract-Architektur
 
-## 🏗️ Project Structure
+### Frontend
+- **React 18** + **TypeScript** - Moderne UI-Entwicklung
+- **Tailwind CSS** - Responsive Design-System
+- **Framer Motion** - Animationen und Übergänge
+- **ethers.js** - Blockchain-Integration
+- **Radix UI** - Barrierefreie UI-Komponenten
+
+### Entwicklungstools
+- **Vite** - Schneller Build-Tool
+- **ESLint** + **Prettier** - Code-Qualität
+- **Git** - Versionskontrolle
+
+## 🔒 Sicherheitsfeatures
+
+### Commit-Reveal Pattern
+```solidity
+// Phase 1: Spieler committen verschlüsselte Zahlen
+function commitNumber(bytes32 hashedNumber) external payable;
+
+// Phase 2: Spieler enthüllen ihre ursprünglichen Zahlen
+function revealNumber(uint256 number, uint256 salt) external;
+```
+
+### Weitere Sicherheitsmaßnahmen
+- **ReentrancyGuard** - Schutz vor Reentrancy-Attacken
+- **Timer-System** - Automatische Phasenübergänge bei Inaktivität
+- **Input-Validierung** - Überprüfung aller Benutzereingaben
+- **Access Control** - Rollenbasierte Berechtigungen
+
+## ⛽ Gas-Optimierungen
+
+1. **Batch-Operations** - Mehrere Aktionen in einer Transaktion
+2. **Packed Structs** - Optimierte Datenstrukturen
+3. **Event-basierte Logging** - Reduzierte On-Chain-Speicherung
+4. **Lazy Evaluation** - Berechnungen nur bei Bedarf
+5. **Factory Pattern** - Wiederverwendbare Contract-Templates
+
+## 📦 Installation & Setup
+
+### Voraussetzungen
+- **Node.js** (v18 oder höher)
+- **npm** oder **yarn**
+- **Git**
+- **MetaMask** Browser-Extension
+
+### 1. Repository klonen
+```bash
+git clone https://github.com/IHR_USERNAME/quantum_game_DApp.git
+cd quantum_game_DApp
+```
+
+### 2. Backend Setup (Smart Contracts)
+```bash
+# Dependencies installieren
+npm install
+
+# Lokale Blockchain starten (neues Terminal)
+npx hardhat node
+
+# Contracts deployen (neues Terminal)
+npx hardhat run scripts/deploy.ts --network localhost
+
+# ABIs für Frontend exportieren
+npm run export-abi
+```
+
+### 3. Frontend Setup
+```bash
+# In Frontend-Verzeichnis wechseln
+cd Frontend
+
+# Frontend Dependencies installieren
+npm install
+
+# Development Server starten
+npm run dev
+```
+
+### 4. MetaMask konfigurieren
+1. **Netzwerk hinzufügen**:
+   - **Name**: Hardhat Local
+   - **RPC URL**: `http://127.0.0.1:8545`
+   - **Chain ID**: `31337`
+   - **Currency**: `ETH`
+
+2. **Test-Account importieren**:
+   ```
+   Private Key: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+   ```
+
+## 🚀 Anwendung starten
+
+### Schnellstart (3 Terminals)
+```bash
+# Terminal 1: Blockchain
+npx hardhat node
+
+# Terminal 2: Contracts deployen
+npx hardhat run scripts/deploy.ts --network localhost
+
+# Terminal 3: Frontend
+cd Frontend && npm run dev
+```
+
+**Anwendung öffnen**: [http://localhost:5173](http://localhost:5173)
+
+## 🏛️ Architektur
+
+### Smart Contract Architektur
+```
+GameFactory.sol
+├── createGame() - Neue Spielinstanz erstellen
+├── currentGame - Aktives Spiel verwalten
+└── owner permissions - Admin-Funktionen
+
+TwoThirdsAverageGame.sol
+├── Phase Management (6 Phasen)
+│   ├── WAITING_FOR_PLAYERS
+│   ├── GAME_STARTING  
+│   ├── COMMIT_PHASE
+│   ├── REVEAL_PHASE
+│   ├── EVALUATING_RESULTS
+│   └── GAME_ENDED
+├── Player Management
+├── Commit-Reveal System
+├── Winner Calculation
+└── Prize Distribution
+```
+
+### Frontend Architektur
+```
+src/
+├── components/
+│   ├── GameInterface.tsx - Hauptspiel-UI
+│   ├── PlayerPortal.tsx - Spieler-Dashboard
+│   ├── NumberSelector.tsx - Zahlenauswahl
+│   ├── ResultsVisualizer.tsx - Ergebnis-Anzeige
+│   └── GameInstructions.tsx - Spielregeln
+├── contexts/
+│   └── EthereumContext.tsx - Blockchain-Integration
+├── hooks/
+│   └── useCommitReveal.ts - Commit-Reveal Logic
+└── utils/
+    └── gamePhase.ts - Phasen-Mapping
+```
+
+## 📍 Contract-Adressen
+
+### Lokales Netzwerk (Hardhat)
+```
+GameFactory: 0x5FbDB2315678afecb367f032d93F642f64180aa3
+TwoThirdsAverageGame: [Dynamisch erstellt via Factory]
+```
+
+### Testnet (Sepolia) - Optional
+```
+GameFactory: [Nach Testnet-Deployment]
+TwoThirdsAverageGame: [Nach Testnet-Deployment]
+```
+
+## 🎮 Spielablauf
+
+### 1. Wartephase
+- Spieler treten dem Spiel bei (min. 3 Spieler)
+- Zahlung der Eintrittsgebühr
+- Automatischer Start bei ausreichender Teilnehmerzahl
+
+### 2. Commit-Phase
+- Spieler wählen geheime Zahl (0-1000)
+- Eingabe eines Salt-Wertes für Verschlüsselung
+- Commitment der verschlüsselten Zahl an Blockchain
+
+### 3. Reveal-Phase  
+- Spieler enthüllen ihre ursprünglichen Zahlen
+- Verifikation gegen gespeicherte Commits
+- Automatische Disqualifikation bei falschen Reveals
+
+### 4. Auswertungsphase
+- Berechnung des Durchschnitts aller Zahlen
+- Ermittlung von 2/3 des Durchschnitts
+- Bestimmung des Gewinners (nächste Zahl)
+
+### 5. Ergebnisphase
+- Anzeige aller Ergebnisse und Gewinner
+- Automatische Preisverteilung
+- Option für neues Spiel
+
+## 🧪 Tests ausführen
+
+```bash
+# Smart Contract Tests
+npx hardhat test
+
+# Frontend Tests (falls implementiert)
+cd Frontend && npm run test
+```
+
+## 📊 Beispiel-Spielverlauf
 
 ```
-quantum_game_DApp-main/
-├── contracts/                 # Solidity smart contracts
-│   ├── GameFactory.sol       # ✅ Factory for creating game instances
-│   └── TwoThirdsAverageGame.sol # ✅ Main game logic contract
-├── Frontend/                  # React + TypeScript frontend
-│   ├── src/
-│   │   ├── components/       # ✅ Game UI components
-│   │   ├── contexts/         # ✅ Web3 integration
-│   │   └── hooks/            # ✅ Custom React hooks
-│   └── package.json
-├── scripts/                   # Deployment and utility scripts
-│   ├── deploy.ts             # ✅ Contract deployment
-│   └── exportABIs.ts         # ✅ ABI generation
-├── test/                      # ❌ Unit tests (pending)
-├── hardhat.config.ts         # ✅ Hardhat configuration
-└── package.json              # ✅ Project dependencies
+Spieler A: 500  |  Spieler B: 300  |  Spieler C: 600
+Durchschnitt: (500 + 300 + 600) / 3 = 466.67
+2/3 des Durchschnitts: 466.67 * 2/3 = 311.11
+
+Distanzen zum Zielwert (311):
+- Spieler A: |500 - 311| = 189
+- Spieler B: |300 - 311| = 11  ← GEWINNER
+- Spieler C: |600 - 311| = 289
+
+🏆 Spieler B gewinnt!
 ```
 
-## 🚀 Getting Started
+## 🤝 Entwicklung & Beitrag
 
-### Prerequisites
-- **Node.js** (v16 or higher)
-- **MetaMask** browser extension
-- **Git** for version control
+### Git-Workflow
+```bash
+# Änderungen holen
+git pull
 
-### Installation
+# Neuen Branch erstellen
+git checkout -b feature/neue-funktion
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd quantum_game_DApp-main
-   ```
+# Änderungen committen
+git add .
+git commit -m "Add: Neue Funktion implementiert"
 
-2. **Install backend dependencies**
-   ```bash
-   npm install
-   ```
+# Push und Pull Request
+git push origin feature/neue-funktion
+```
 
-3. **Install frontend dependencies**
-   ```bash
-   cd Frontend
-   npm install
-   cd ..
-   ```
+### Code-Standards
+- **TypeScript** für alle neuen Dateien
+- **ESLint** Regeln befolgen
+- **Commit-Messages** im Format: `Type: Beschreibung`
+- **Tests** für neue Funktionen schreiben
 
-### Running the Application
+## 📄 Lizenz
 
-1. **Start Hardhat local blockchain**
-   ```bash
-   npx hardhat node
-   ```
-   Keep this terminal running. Note the displayed accounts and private keys.
+Dieses Projekt wurde für den Blockchain-Kurs entwickelt und steht unter MIT-Lizenz.
 
-2. **Deploy contracts (in new terminal)**
-   ```bash
-   npx hardhat run scripts/deploy.ts --network localhost
-   ```
-   This will deploy contracts and export ABIs to the frontend.
+## 🔗 Links & Ressourcen
 
-3. **Start the frontend (in new terminal)**
-   ```bash
-   cd Frontend
-   npm run dev
-   ```
-   Open `http://localhost:5173` in your browser.
+- **Repository**: [GitHub Link hier einfügen]
+- **Hardhat Dokumentation**: https://hardhat.org/docs
+- **Solidity Style Guide**: https://docs.soliditylang.org/en/latest/style-guide.html
+- **OpenZeppelin**: https://docs.openzeppelin.com/
+- **ethers.js**: https://docs.ethers.io/
 
-4. **Configure MetaMask**
-   - Add Hardhat Network: RPC `http://127.0.0.1:8545`, Chain ID `31337`
-   - Import test accounts using private keys from step 1
-   - Switch to the Hardhat network
+## 👥 Team
 
-## ✨ Implemented Features
-
-### Smart Contract Features
-- ✅ **Factory Pattern**: `GameFactory.sol` manages multiple game instances
-- ✅ **Complete Game Lifecycle**: 6-phase system (Waiting → Starting → Commit → Reveal → Evaluating → Ended)
-- ✅ **Commit-Reveal Security**: Prevents front-running attacks
-- ✅ **Prize Distribution**: Winner gets prize pool minus service fee
-- ✅ **Early Exit Handling**: Players can leave before game starts
-- ✅ **Gas Optimization**: Efficient storage, batch operations, pull-over-push pattern
-- ✅ **Security Measures**: ReentrancyGuard, input validation, access controls
-
-### Frontend Features  
-- ✅ **Modern React UI**: TypeScript + Tailwind CSS + Radix UI components
-- ✅ **Real-time Game Visualization**: Dynamic phase indicators and countdowns
-- ✅ **MetaMask Integration**: Seamless wallet connection and transaction signing
-- ✅ **Responsive Design**: Works on desktop and mobile devices
-- ✅ **Transaction Feedback**: Loading states, confirmations, error handling
-- ✅ **Game Management**: Create games, join, commit numbers, reveal, withdraw prizes
-
-### Technical Implementation
-- ✅ **Solidity ^0.8.20**: Latest language features and built-in overflow protection
-- ✅ **OpenZeppelin Libraries**: Battle-tested security patterns
-- ✅ **ethers.js v6**: Modern Web3 integration
-- ✅ **Event-Driven Architecture**: Real-time UI updates via contract events
-- ✅ **Type Safety**: Full TypeScript implementation
-
-## 🎮 How to Play
-
-1. **Connect Wallet**: Click "Connect Wallet" and approve MetaMask connection
-2. **Join Game**: Pay the entry fee to join an existing game
-3. **Commit Phase**: Submit your guess (0-1000) with a secret salt
-4. **Reveal Phase**: Reveal your original number and salt to prove your commitment
-5. **Results**: System calculates 2/3 of average and determines winner
-6. **Withdraw**: Winner can withdraw their prize from the contract
-
-## 🔧 Configuration
-
-### Contract Parameters (Configurable via GameFactory)
-- **Entry Fee**: Default 0.01 ETH
-- **Min Players**: Default 3 players
-- **Max Players**: Default 60 players  
-- **Commit Duration**: Default 120 seconds
-- **Reveal Duration**: Default 100 seconds
-- **Service Fee**: Default 5% to contract owner
-
-### Local Development
-- **Hardhat Network**: Chain ID 31337
-- **GameFactory Address**: Set in `Frontend/src/addresses.json` after deployment
-- **Gas Limit**: Optimized for local development
-
-## 🔐 Security Features
-
-- **Commit-Reveal Pattern**: Hides player choices until reveal phase
-- **Reentrancy Protection**: All state-changing functions protected
-- **Access Controls**: Owner-only administrative functions
-- **Input Validation**: Comprehensive parameter checking
-- **Pull Withdrawals**: Prevents DoS attacks through failed transfers
-- **Time Constraints**: Deadline enforcement prevents timing attacks
-
-## 📊 Gas Optimization
-
-- **Packed Structs**: Minimize storage slots
-- **Batch Operations**: Single `catchUp()` for phase transitions
-- **Event-Based UI**: Reduce view function calls
-- **Limited Loops**: Bounded iterations to prevent gas limit issues
-- **OpenZeppelin Patterns**: Proven gas-efficient implementations
-
-## ⚠️ Known Limitations
-
-- **Tests Missing**: Unit test suite not yet implemented
-- **Testnet Deployment**: Currently only supports local Hardhat network
-- **Documentation**: Academic documentation pending
-- **Gas Reporting**: Formal gas analysis not completed
-
-## 🚧 Remaining Work (~2 hours)
-
-1. **Unit Tests** (60 min): Comprehensive test suite for both contracts
-2. **Testnet Deployment** (30 min): Deploy to Sepolia with verification
-3. **Documentation** (30 min): Complete academic documentation
-
-## 🎓 Academic Compliance
-
-This project satisfies all core requirements:
-- ✅ Solidity smart contract with game logic and user management
-- ✅ Factory pattern implementation  
-- ✅ Local Ethereum blockchain deployment
-- ✅ Entry fee and prize distribution system
-- ✅ Protection against blockchain data exploitation
-- ✅ Early exit handling for non-responsive players
-- ✅ Gas-efficient implementation
-- ✅ Web-based user interface without game logic
-
-## 🤝 Contributing
-
-This is an academic assignment project. For educational purposes, you can:
-1. Review the code structure and patterns
-2. Test the game mechanics locally
-3. Suggest improvements for gas optimization
-4. Report bugs or edge cases
-
-## 📄 License
-
-This project is created for educational purposes as part of a university blockchain course.
+**Entwickler**: [Eure Namen]  
+**Kurs**: Blockchain Development  
+**Jahr**: 2025
 
 ---
 
-**Built with modern blockchain development best practices** 🚀
+> 💡 **Hinweis**: Diese DApp ist zu Bildungszwecken entwickelt. Für Produktionsumgebungen sind zusätzliche Sicherheitsaudits empfohlen.
