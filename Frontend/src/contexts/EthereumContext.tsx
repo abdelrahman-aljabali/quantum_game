@@ -1,17 +1,17 @@
 /**
  * @fileoverview Ethereum Context - Central blockchain integration for 2/3 Average Game
- * 
+ *
  * ARCHITECTURE:
  * This context manages all blockchain interactions, wallet connections, and game state.
  * It provides a clean abstraction layer between React components and smart contracts.
- * 
+ *
  * KEY RESPONSIBILITIES:
  * - Wallet connection/disconnection via MetaMask
  * - Smart contract instantiation and method calls
  * - Real-time game state synchronization
  * - Event listening for contract updates
  * - Error handling and user feedback
- * 
+ *
  * DESIGN PATTERNS:
  * - Context API for global state management
  * - Observer pattern for blockchain events
@@ -38,12 +38,12 @@ import TwoThirdsAverageGameABI from "../abi/TwoThirdsAverageGame.json";
  * Used to track current game state and enable/disable UI features
  */
 export enum GamePhase {
-  WAITING_FOR_PLAYERS = 0,  // Accepting new players
-  GAME_STARTING = 1,        // Grace period after min players reached
-  COMMIT_PHASE = 2,         // Players submit encrypted guesses
-  REVEAL_PHASE = 3,         // Players reveal original guesses
-  EVALUATING_RESULTS = 4,   // Contract calculating winner
-  GAME_ENDED = 5,           // Game complete, withdrawals available
+  WAITING_FOR_PLAYERS = 0, // Accepting new players
+  GAME_STARTING = 1, // Grace period after min players reached
+  COMMIT_PHASE = 2, // Players submit encrypted guesses
+  REVEAL_PHASE = 3, // Players reveal original guesses
+  EVALUATING_RESULTS = 4, // Contract calculating winner
+  GAME_ENDED = 5, // Game complete, withdrawals available
 }
 
 // Player info from contract mapping
@@ -191,11 +191,10 @@ export const EthereumProvider: React.FC<{ children: ReactNode }> = ({
         console.log("🔍  factory.currentGame():", gameAddr);
 
         if (!gameAddr || gameAddr === ethers.ZeroAddress) {
-          console.log("⚠️  No current game found — deploying a new one...");
-          const tx = await factory.createGame();
-          await tx.wait();
-          gameAddr = await factory.currentGame();
-          console.log("✅  New game created at:", gameAddr);
+          console.warn(
+            "⚠️ No active game found. Waiting for user to create one."
+          );
+          return; // Exit early
         }
 
         setCurrentGameAddress(gameAddr);
@@ -591,21 +590,15 @@ export const EthereumProvider: React.FC<{ children: ReactNode }> = ({
 
   const resetGameUI = async () => {
     try {
-      console.log("🔄 Resetting game UI...");
-
-      // 1. Safely remove all event listeners from the previous game contract
+      // STEP 1: Detach listeners from old contract (avoid memory leaks)
       if (currentGameContract) {
-        console.log(
-          "❌ Removing old listeners from:",
-          currentGameContract.target
-        );
         currentGameContract.removeAllListeners();
       }
 
-      // 2. Reset all frontend state to default values
+      // STEP 2: Clear UI and game state
       setCurrentGameContract(null);
       setCurrentGameAddress(null);
-      setGamePhase(null);
+      setGamePhase(null); // <- This prevents the fallback to "Results"
       setPlayerCount(0);
       setTimeRemaining(0);
       setEntryFee(null);
@@ -619,11 +612,41 @@ export const EthereumProvider: React.FC<{ children: ReactNode }> = ({
       setPlayers([]);
       setError(null);
 
-      // 3. Log current state
-      console.log("✅ Frontend state reset complete.");
+      console.log("🔁 UI state cleared");
+
+      // STEP 3: Small delay to ensure reset is processed before refetch
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      // STEP 4: Re-attach to a new or existing game (if contract has one)
+      if (gameFactoryContract && signer) {
+        const gameAddr = await gameFactoryContract.currentGame();
+
+        console.log("📡 Fetching currentGame from factory:", gameAddr);
+
+        if (gameAddr && gameAddr !== ethers.ZeroAddress) {
+          const newGame = new ethers.Contract(
+            gameAddr,
+            TwoThirdsAverageGameABI,
+            signer
+          );
+
+          setCurrentGameAddress(gameAddr);
+          setCurrentGameContract(newGame);
+
+          console.log("✅ Attached to new game at:", gameAddr);
+
+          // STEP 5: Give the contract a bit of time before syncing state
+          setTimeout(async () => {
+            await fetchGameState();
+            console.log("✅ State refreshed after reset");
+          }, 300);
+        } else {
+          console.warn("⚠️ No current game exists. Ready to create a new one.");
+        }
+      }
     } catch (error) {
-      console.error("❌ Error resetting game UI:", error);
-      setError("Something went wrong while resetting the game UI.");
+      console.error("❌ Error during game reset:", error);
+      setError("Something went wrong during game reset.");
     }
   };
 

@@ -1,23 +1,23 @@
 /**
  * @fileoverview GameInterface Component - Central game area with phase-specific interfaces
- * 
+ *
  * PURPOSE:
  * Primary interactive game component that provides different interfaces for each
  * game phase. Handles player number selection, submission, and results display.
- * 
+ *
  * PHASE-SPECIFIC INTERFACES:
  * - Waiting: Player count display with animated waiting indicator
  * - Submission: Number selector with countdown timer and submission button
  * - Calculating: Loading animation while smart contract processes results
  * - Results: Comprehensive results visualization with play-again option
- * 
+ *
  * KEY INTERACTIONS:
  * - Number selection (0-1000) with validation
  * - Secure number submission to blockchain
  * - Real-time countdown timers
  * - Automatic phase advancement when timers expire
  * - Results visualization with mathematical breakdown
- * 
+ *
  * VISUAL DESIGN:
  * - Phase-based background gradients and color schemes
  * - Smooth animations and transitions between phases
@@ -35,20 +35,21 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useEthereum, GamePhase } from "@/contexts/EthereumContext";
 import { mapOnchainPhase, UIPhase } from "@/utils/gamePhase";
+import { useNavigate } from "react-router-dom";
 
 interface GameInterfaceProps {
-  onSubmitNumber?: (num: number) => void;  // Optional callback for number submission
+  onSubmitNumber?: (num: number) => void; // Optional callback for number submission
 }
 
 /**
  * @component GameInterface
  * @description Central game area that adapts its interface based on current game phase
- * 
+ *
  * STATE MANAGEMENT:
  * - selectedNumber: Player's current number selection (local state)
  * - hasAutoAdvanced: Prevents multiple auto-advance calls per phase
  * - All game state comes from EthereumContext (blockchain source of truth)
- * 
+ *
  * PHASE ADAPTATION:
  * Component renders completely different interfaces based on game phase,
  * providing appropriate controls and information for each stage.
@@ -56,18 +57,18 @@ interface GameInterfaceProps {
 const GameInterface: React.FC<GameInterfaceProps> = ({ onSubmitNumber }) => {
   // === BLOCKCHAIN STATE (from EthereumContext) ===
   const {
-    gamePhase,                    // Raw contract phase (6 states)
-    playerCount,                  // Current number of players
-    timeRemaining,                // Seconds until next phase
-    submissions: contractSubmissions,      // Revealed player submissions
-    winningNumber: contractWinningNumber,  // Calculated 2/3 average target
-    winner: contractWinner,                // Winning player address
-    prizeAmount: contractPrizeAmount,      // Prize pool amount
-    submitNumber,                 // Function to submit number to contract
-    hasJoined,                   // Current user participation status
-    hasSubmitted,                // Current user submission status
-    advancePhase,                // Manual phase advancement function
-    resetGameUI,                 // Game reset function
+    gamePhase, // Raw contract phase (6 states)
+    playerCount, // Current number of players
+    timeRemaining, // Seconds until next phase
+    submissions: contractSubmissions, // Revealed player submissions
+    winningNumber: contractWinningNumber, // Calculated 2/3 average target
+    winner: contractWinner, // Winning player address
+    prizeAmount: contractPrizeAmount, // Prize pool amount
+    submitNumber, // Function to submit number to contract
+    hasJoined, // Current user participation status
+    hasSubmitted, // Current user submission status
+    advancePhase, // Manual phase advancement function
+    resetGameUI, // Game reset function
   } = useEthereum();
 
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
@@ -82,6 +83,22 @@ const GameInterface: React.FC<GameInterfaceProps> = ({ onSubmitNumber }) => {
   const progressPercentage = (timeRemaining / maxTime) * 100;
 
   const [hasAutoAdvanced, setHasAutoAdvanced] = useState(false);
+
+  const navigate = useNavigate();
+  const [isResetting, setIsResetting] = useState(false);
+
+  const handlePlayAgain = async () => {
+    setIsResetting(true); // optional loading state
+    console.log("🔁 Resetting game...");
+    await resetGameUI();
+
+    // Allow re-fetching and game phase update before routing
+    setTimeout(() => {
+      console.log("✅ Navigating to /");
+      navigate("/"); // ⬅️ this re-triggers Home and its internal components cleanly
+      setIsResetting(false);
+    }, 500); // ⏱ Adjust if needed
+  };
 
   // 🚀 auto‑advance on zero
   useEffect(() => {
@@ -128,7 +145,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({ onSubmitNumber }) => {
       case UIPhase.Calculating:
         return "bg-gradient-to-br from-orange-900 to-red-900";
       case UIPhase.Results:
-        return "bg-gradient-to-br from-green-900 to-emerald-900";
+        return "bg-gradient-to-b from-gray-900 to-black p-6 rounded-xl border border-cyan-600/30 shadow-lg shadow-cyan-500/20";
       default:
         return "bg-gradient-to-br from-blue-900 to-indigo-900";
     }
@@ -342,7 +359,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({ onSubmitNumber }) => {
                 winningNumber={winningNumber}
                 winner={winner}
                 prizeAmount={prizeAmount}
-                onPlayAgain={resetGameUI}
+                onPlayAgain={handlePlayAgain}
               />
             </motion.div>
           </div>

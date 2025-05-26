@@ -1,10 +1,10 @@
 /**
  * @fileoverview PlayerPortal Component - Right-side game interface panel
- * 
+ *
  * PURPOSE:
  * Provides a comprehensive player interface including wallet connection,
  * game status, player profile, and detailed game instructions.
- * 
+ *
  * FEATURES:
  * - Wallet connection/disconnection with MetaMask integration
  * - Real-time game phase tracking with visual indicators
@@ -12,7 +12,7 @@
  * - Tabbed interface for Profile and Instructions
  * - Join/Leave game functionality with entry fee handling
  * - Responsive design with smooth animations
- * 
+ *
  * UI/UX DESIGN:
  * - Fixed positioning on right side of screen
  * - Dark theme with colored accents based on game phase
@@ -52,15 +52,15 @@ import GameInstructions from "./GameInstructions";
 /**
  * @component PlayerPortal
  * @description Main player interface component with wallet, status, and instructions
- * 
+ *
  * STATE MANAGEMENT:
  * - activeTab: Controls Profile vs Instructions tab display
  * - All game state comes from EthereumContext (blockchain source of truth)
- * 
+ *
  * PHASE MAPPING:
  * Smart contract has 6 phases, but UI simplifies to 4 user-friendly categories:
  * - waiting: WAITING_FOR_PLAYERS + GAME_STARTING
- * - submission: COMMIT_PHASE + REVEAL_PHASE  
+ * - submission: COMMIT_PHASE + REVEAL_PHASE
  * - calculating: EVALUATING_RESULTS
  * - results: GAME_ENDED
  */
@@ -70,21 +70,21 @@ const PlayerPortal: React.FC = () => {
 
   // === BLOCKCHAIN STATE (from Context) ===
   const {
-    account,              // Connected wallet address
-    isConnected,          // Wallet connection status
-    isConnecting,         // Connection in progress
-    connectWallet,        // Wallet connection function
-    disconnectWallet,     // Wallet disconnection function
-    playerCount,          // Current players in game
+    account, // Connected wallet address
+    isConnected, // Wallet connection status
+    isConnecting, // Connection in progress
+    connectWallet, // Wallet connection function
+    disconnectWallet, // Wallet disconnection function
+    playerCount, // Current players in game
     gamePhase: contextGamePhase, // Raw contract phase
-    error,                // Last error message
-    joinGame,             // Join game function
-    entryFee,             // Entry fee in ETH
-    hasJoined,            // Current user joined status
-    hasSubmitted,         // Current user submitted guess
-    timeRemaining,        // Seconds until next phase
-    currentGameContract,  // Contract instance
-    leaveGame,            // Leave game function
+    error, // Last error message
+    joinGame, // Join game function
+    entryFee, // Entry fee in ETH
+    hasJoined, // Current user joined status
+    hasSubmitted, // Current user submitted guess
+    timeRemaining, // Seconds until next phase
+    currentGameContract, // Contract instance
+    leaveGame, // Leave game function
   } = useEthereum();
 
   /**
@@ -93,10 +93,11 @@ const PlayerPortal: React.FC = () => {
    * @returns User-friendly phase name for styling and display
    */
   const getGamePhaseString = ():
-    | "waiting"      // Players joining, game not started
-    | "submission"   // Players committing/revealing guesses
-    | "calculating"  // Contract determining winner
-    | "results" => { // Game complete, winner known
+    | "waiting" // Players joining, game not started
+    | "submission" // Players committing/revealing guesses
+    | "calculating" // Contract determining winner
+    | "results" => {
+    // Game complete, winner known
     switch (contextGamePhase) {
       case GamePhase.WAITING_FOR_PLAYERS:
       case GamePhase.GAME_STARTING:
@@ -153,8 +154,8 @@ const PlayerPortal: React.FC = () => {
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5 }}
       className={`
-    absolute top-5 right-2 // 👈 this places it with 8 spacing from the right
-    bg-black/90 backdrop-blur-sm w-[380px] h-[750px]
+    absolute top-5 right-4
+    bg-black/90 backdrop-blur-sm w-[380px] h-[760px]
     rounded-xl border-2 ${getBorderColor()} ${getGlowEffect()}
     overflow-hidden shadow-xl
   `}
@@ -209,7 +210,7 @@ const PlayerPortal: React.FC = () => {
           )}
         </div>
 
-        {/* Error */}
+        {/* Error 
         {error && (
           <Alert
             variant="destructive"
@@ -219,6 +220,7 @@ const PlayerPortal: React.FC = () => {
             <AlertDescription className="text-xs">{error}</AlertDescription>
           </Alert>
         )}
+        */}
 
         {/* Game Status */}
         <div className="mb-3 bg-gray-900/60 rounded-lg p-2">
@@ -227,10 +229,10 @@ const PlayerPortal: React.FC = () => {
             <Badge
               variant="outline"
               className={`text-xs px-2 py-1 ${
-                  gamePhase === "waiting"
-                    ? "bg-blue-500/20 text-blue-300 border-blue-500"
-                    : ""
-                }
+                gamePhase === "waiting"
+                  ? "bg-blue-500/20 text-blue-300 border-blue-500"
+                  : ""
+              }
                 ${
                   gamePhase === "submission"
                     ? "bg-green-500/20 text-green-300 border-green-500"
@@ -301,9 +303,7 @@ const PlayerPortal: React.FC = () => {
             </p>
 
             {hasSubmitted && (
-              <p className="text-xs text-green-500 mt-1">
-                Number submitted
-              </p>
+              <p className="text-xs text-green-500 mt-1">Number submitted</p>
             )}
 
             {/* ✅ Leave Game Button */}
@@ -320,17 +320,21 @@ const PlayerPortal: React.FC = () => {
 
         {/* Profile & Instructions Tabs */}
         <div className="flex-1 flex flex-col min-h-0">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="flex-1 flex flex-col min-h-0"
+          >
             <TabsList className="grid w-full grid-cols-2 bg-gray-800/60 mb-2">
-              <TabsTrigger 
-                value="profile" 
+              <TabsTrigger
+                value="profile"
                 className="text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white"
               >
                 <User className="h-3 w-3 mr-1" />
                 Profile
               </TabsTrigger>
-              <TabsTrigger 
-                value="instructions" 
+              <TabsTrigger
+                value="instructions"
                 className="text-xs data-[state=active]:bg-purple-600 data-[state=active]:text-white"
               >
                 <BookOpen className="h-3 w-3 mr-1" />
@@ -339,7 +343,10 @@ const PlayerPortal: React.FC = () => {
             </TabsList>
 
             <div className="flex-1 min-h-0">
-              <TabsContent value="profile" className="h-full overflow-y-auto data-[state=active]:block data-[state=inactive]:hidden m-0">
+              <TabsContent
+                value="profile"
+                className="h-full overflow-y-auto data-[state=active]:block data-[state=inactive]:hidden m-0"
+              >
                 <div className="pr-2">
                   <Card className="bg-gray-900/60 border-gray-800">
                     <CardHeader className="pb-2">
@@ -362,7 +369,9 @@ const PlayerPortal: React.FC = () => {
                       <h3 className="text-base font-bold text-white">
                         {account ? "Blockchain Player" : "Guest"}
                       </h3>
-                      <p className="text-xs text-gray-400 mb-3">Joined June 2025</p>
+                      <p className="text-xs text-gray-400 mb-3">
+                        Joined June 2025
+                      </p>
 
                       <div className="bg-gray-800/60 rounded-lg p-2 text-center mb-3 w-full">
                         <p className="text-xs text-gray-400">Status</p>
@@ -378,7 +387,8 @@ const PlayerPortal: React.FC = () => {
                       </div>
 
                       {timeRemaining > 0 &&
-                        (gamePhase === "waiting" || gamePhase === "submission") && (
+                        (gamePhase === "waiting" ||
+                          gamePhase === "submission") && (
                           <div className="bg-gray-800/60 rounded-lg p-2 text-center mb-3 w-full">
                             <p className="text-xs text-gray-400">
                               {gamePhase === "waiting"
@@ -395,7 +405,10 @@ const PlayerPortal: React.FC = () => {
                 </div>
               </TabsContent>
 
-              <TabsContent value="instructions" className="h-full overflow-y-auto data-[state=active]:block data-[state=inactive]:hidden m-0">
+              <TabsContent
+                value="instructions"
+                className="h-full overflow-y-auto data-[state=active]:block data-[state=inactive]:hidden m-0"
+              >
                 <div className="pr-2">
                   <GameInstructions />
                 </div>

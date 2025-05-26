@@ -1,24 +1,24 @@
 /**
  * @fileoverview Home Component - Main game interface layout and visual orchestration
- * 
+ *
  * PURPOSE:
- * Serves as the primary game interface combining the central game area with 
+ * Serves as the primary game interface combining the central game area with
  * the player portal. Provides dynamic visual theming based on game phase
  * and manages the overall user experience flow.
- * 
+ *
  * LAYOUT ARCHITECTURE:
  * - Full-screen gradient background with phase-based theming
  * - Header with animated logo and branding
  * - Main area split between GameInterface (left) and PlayerPortal (right)
  * - Footer with game attribution
  * - Animated particle system for visual enhancement
- * 
+ *
  * VISUAL DESIGN:
  * - Phase-based color schemes (blue→purple→orange→green)
  * - Smooth transitions between game phases
  * - Floating particle animation for engagement
  * - Glassmorphism effects with transparency layers
- * 
+ *
  * RESPONSIVE APPROACH:
  * - Fixed sidebar width (320px) for player portal
  * - Flexible main game area that adapts to remaining space
@@ -33,17 +33,19 @@ import GameInterface from "./GameInterface";
 import PlayerPortal from "./PlayerPortal";
 import { useEthereum } from "@/contexts/EthereumContext";
 import { mapOnchainPhase, UIPhase } from "@/utils/gamePhase";
+import { useNavigate } from "react-router-dom";
+import ResultsVisualizer from "./ResultsVisualizer"; // wherever it's located
 
 /**
  * @component Home
  * @description Main application interface that orchestrates the game experience
- * 
+ *
  * RESPONSIBILITIES:
  * - Layout management for game interface and player portal
  * - Phase-based visual theming and transitions
  * - Background animation and particle effects
  * - Initial game state loading
- * 
+ *
  * STATE MANAGEMENT:
  * - Consumes blockchain state from EthereumContext
  * - Maps complex on-chain phases to simplified UI phases
@@ -52,9 +54,9 @@ import { mapOnchainPhase, UIPhase } from "@/utils/gamePhase";
 const Home: React.FC = () => {
   // === BLOCKCHAIN STATE ===
   const {
-    isConnected,           // Wallet connection status (for future features)
+    isConnected, // Wallet connection status (for future features)
     gamePhase: onchainPhase, // Raw contract phase (6 states)
-    refreshGameState,      // Function to sync with blockchain
+    refreshGameState, // Function to sync with blockchain
   } = useEthereum();
 
   // === INITIALIZATION ===
@@ -71,7 +73,7 @@ const Home: React.FC = () => {
   /**
    * @function bgClass
    * @description Dynamic background gradient based on current game phase
-   * 
+   *
    * PHASE COLOR MAPPING:
    * - Waiting: Blue tones (calm, preparation)
    * - Submission: Purple tones (active, strategic thinking)
@@ -81,17 +83,31 @@ const Home: React.FC = () => {
   const bgClass = (() => {
     switch (phase) {
       case UIPhase.Waiting:
-        return "from-blue-900 to-indigo-900";      // Calm preparation phase
+        return "from-blue-900 to-indigo-900"; // Calm preparation phase
       case UIPhase.Submission:
-        return "from-purple-900 to-violet-900";    // Active strategy phase
+        return "from-purple-900 to-violet-900"; // Active strategy phase
       case UIPhase.Calculating:
-        return "from-orange-900 to-amber-900";     // Processing anticipation
+        return "from-orange-900 to-amber-900"; // Processing anticipation
       case UIPhase.Results:
-        return "from-emerald-900 to-teal-900";     // Completion celebration
+        return "from-emerald-900 to-teal-900"; // Completion celebration
       default:
-        return "from-blue-900 to-indigo-900";      // Fallback to waiting
+        return "from-blue-900 to-indigo-900"; // Fallback to waiting
     }
   })();
+
+  const navigate = useNavigate();
+  const { resetGameUI } = useEthereum();
+
+  const handlePlayAgain = async () => {
+    console.log("🎯 Play Again clicked...");
+    await resetGameUI();
+
+    // Wait a moment to ensure state is reset and clean
+    setTimeout(() => {
+      console.log("🧭 Navigating to home");
+      navigate("/"); // ← Takes you back to Home interface (GameInterface + PlayerPortal)
+    }, 500);
+  };
 
   return (
     <div
@@ -140,7 +156,7 @@ const Home: React.FC = () => {
       {/* === MAIN CONTENT AREA === */}
       {/* Split layout: GameInterface (left) + PlayerPortal (right) */}
       <main className="z-10 relative flex-1 flex p-4 gap-4 overflow-hidden">
-        <section className="flex-1">
+        <section className="flex-1 max-w-[calc(100%-25rem)] mr-2">
           <GameInterface />
         </section>
         <aside className="w-80">

@@ -1,46 +1,47 @@
 # Node modules (for both frontend and backend)
 **/node_modules/
 
-# Environment files
+# Environment variables
 **/.env
-**/.env.local
+**/.env.*  # Covers .env.local, .env.production, etc.
 
-# Build output
+# Build and cache outputs
 **/dist/
 **/build/
+**/.turbo/
+**/.next/
+**/.cache/
+**/coverage/
+**/coverage.json
 
 # Log files
 *.log
 
-# IDE/editor configs
+# IDE/editor settings
 .vscode/
 .idea/
 *.swp
 
-# OS files
+# OS-specific files
 .DS_Store
 Thumbs.db
 
-# Hardhat files (Solidity backend)
-game/cache/
-game/artifacts/
+# TypeScript
+*.tsbuildinfo
 
-# TypeChain generated types
-game/typechain/
-game/typechain-types/
+# Linting cache
+.eslintcache
 
-# Solidity coverage
-game/coverage/
-game/coverage.json
+# Hardhat build artifacts
+quantum_game/cache/
+quantum_game/artifacts/
+quantum_game/typechain/
+quantum_game/typechain-types/
 
-# Hardhat Ignition deployments
-game/ignition/deployments/
+# Hardhat Ignition
+quantum_game/ignition/deployments/
 
-# Vite/React/Tailwind temp files (Frontend)
-game/Frontend/.turbo/
-game/Frontend/.next/
+# Frontend framework temp files (e.g., Vite/Next.js)
+quantum_game/Frontend/.turbo/
+quantum_game/Frontend/.next/
 
-# Project planning files (keep local only)
-GOLDEN_RULES.md
-PLANNING.md
-TASK.md

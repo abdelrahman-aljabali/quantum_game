@@ -7,6 +7,7 @@
 Das **2/3 Average Game** ist ein strategisches Spiel aus der Spieltheorie, bei dem Spieler eine Zahl zwischen 0-1000 wählen. Gewinner ist der Spieler, dessen Zahl am nächsten zu **2/3 des Durchschnitts aller Zahlen** liegt. Diese Implementierung nutzt Smart Contracts auf der Ethereum-Blockchain für faire, transparente und automatisierte Spielabwicklung.
 
 ### 🎯 Spielregeln
+
 - **Mindestens 3 Spieler** müssen teilnehmen
 - Jeder Spieler wählt eine **Zahl zwischen 0-1000**
 - **Gewinner**: Spieler mit der Zahl am nächsten zu 2/3 des Durchschnitts
@@ -17,12 +18,14 @@ Das **2/3 Average Game** ist ein strategisches Spiel aus der Spieltheorie, bei d
 ## 🏗️ Technologie-Stack
 
 ### Smart Contracts
+
 - **Solidity ^0.8.x** - Smart Contract Entwicklung
 - **Hardhat** - Ethereum Entwicklungsumgebung
 - **OpenZeppelin** - Sichere Contract-Bibliotheken
 - **Factory Pattern** - Skalierbare Contract-Architektur
 
 ### Frontend
+
 - **React 18** + **TypeScript** - Moderne UI-Entwicklung
 - **Tailwind CSS** - Responsive Design-System
 - **Framer Motion** - Animationen und Übergänge
@@ -30,6 +33,7 @@ Das **2/3 Average Game** ist ein strategisches Spiel aus der Spieltheorie, bei d
 - **Radix UI** - Barrierefreie UI-Komponenten
 
 ### Entwicklungstools
+
 - **Vite** - Schneller Build-Tool
 - **ESLint** + **Prettier** - Code-Qualität
 - **Git** - Versionskontrolle
@@ -37,6 +41,7 @@ Das **2/3 Average Game** ist ein strategisches Spiel aus der Spieltheorie, bei d
 ## 🔒 Sicherheitsfeatures
 
 ### Commit-Reveal Pattern
+
 ```solidity
 // Phase 1: Spieler committen verschlüsselte Zahlen
 function commitNumber(bytes32 hashedNumber) external payable;
@@ -46,6 +51,7 @@ function revealNumber(uint256 number, uint256 salt) external;
 ```
 
 ### Weitere Sicherheitsmaßnahmen
+
 - **ReentrancyGuard** - Schutz vor Reentrancy-Attacken
 - **Timer-System** - Automatische Phasenübergänge bei Inaktivität
 - **Input-Validierung** - Überprüfung aller Benutzereingaben
@@ -62,18 +68,21 @@ function revealNumber(uint256 number, uint256 salt) external;
 ## 📦 Installation & Setup
 
 ### Voraussetzungen
+
 - **Node.js** (v18 oder höher)
 - **npm** oder **yarn**
 - **Git**
 - **MetaMask** Browser-Extension
 
 ### 1. Repository klonen
+
 ```bash
 git clone https://github.com/adrianjustdoit58/quantum_game_DApp.git
 cd quantum_game_DApp
 ```
 
 ### 2. Backend Setup (Smart Contracts)
+
 ```bash
 # Dependencies installieren
 npm install
@@ -82,13 +91,18 @@ npm install
 npx hardhat node
 
 # Contracts deployen (neues Terminal)
-npx hardhat run scripts/deploy.ts --network localhost
+npx hardhat clean
+
+npx hardhat compile
+
+npm run deploy
 
 # ABIs für Frontend exportieren
 npm run export-abi
 ```
 
 ### 3. Frontend Setup
+
 ```bash
 # In Frontend-Verzeichnis wechseln
 cd Frontend
@@ -101,36 +115,78 @@ npm run dev
 ```
 
 ### 4. MetaMask konfigurieren
+
 1. **Netzwerk hinzufügen**:
-   - **Name**: Hardhat Local
+
+   - **Name**: GoChain Testnet
    - **RPC URL**: `http://127.0.0.1:8545`
    - **Chain ID**: `31337`
-   - **Currency**: `ETH`
+   - **Currency**: `GO`
 
-2. **Test-Account importieren**:
+2. **Test-Accounts importieren**:
+
    ```
-   Private Key: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+   Account #1: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8 (10000 ETH)
+   Private Key: 0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
+
+   Account #2: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC (10000 ETH)
+   Private Key: 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a
+
+   Account #3: 0x90F79bf6EB2c4f870365E785982E1f101E93b906 (10000 ETH)
+   Private Key: 0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6
+
    ```
+
+```
+**Owner Account:**
+
+```
+
+Account #0: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 (10000 ETH)
+Private Key: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+
+```
+**Withdraw Profts:**
+1. create .env file
+
+PRIVATE_KEY=ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 // or the private key for the wallet was used for deploying the contract
+RPC_URL=http://127.0.0.1:8545
+
+then run:
+npx ts-node scripts/withdrawOwnerFees.ts
+```
+
+````
 
 ## 🚀 Anwendung starten
 
 ### Schnellstart (3 Terminals)
+
 ```bash
 # Terminal 1: Blockchain
 npx hardhat node
 
 # Terminal 2: Contracts deployen
-npx hardhat run scripts/deploy.ts --network localhost
+npx hardhat clean
+npx hardhat compile
+npm run deploy
+npm run export-abi
+
 
 # Terminal 3: Frontend
-cd Frontend && npm run dev
-```
+cd Frontend
+npm install
+npm run dev
+
+
+````
 
 **Anwendung öffnen**: [http://localhost:5173](http://localhost:5173)
 
 ## 🏛️ Architektur
 
 ### Smart Contract Architektur
+
 ```
 GameFactory.sol
 ├── createGame() - Neue Spielinstanz erstellen
@@ -140,7 +196,7 @@ GameFactory.sol
 TwoThirdsAverageGame.sol
 ├── Phase Management (6 Phasen)
 │   ├── WAITING_FOR_PLAYERS
-│   ├── GAME_STARTING  
+│   ├── GAME_STARTING
 │   ├── COMMIT_PHASE
 │   ├── REVEAL_PHASE
 │   ├── EVALUATING_RESULTS
@@ -152,6 +208,7 @@ TwoThirdsAverageGame.sol
 ```
 
 ### Frontend Architektur
+
 ```
 src/
 ├── components/
@@ -171,53 +228,43 @@ src/
 ## 📍 Contract-Adressen
 
 ### Lokales Netzwerk (Hardhat)
-```
-GameFactory: 0x5FbDB2315678afecb367f032d93F642f64180aa3
-TwoThirdsAverageGame: [Dynamisch erstellt via Factory]
-```
 
-### Testnet (Sepolia) - Optional
 ```
-GameFactory: [Nach Testnet-Deployment]
-TwoThirdsAverageGame: [Nach Testnet-Deployment]
+GameFactory: []
+TwoThirdsAverageGame: [Dynamisch erstellt via Factory]
 ```
 
 ## 🎮 Spielablauf
 
 ### 1. Wartephase
+
 - Spieler treten dem Spiel bei (min. 3 Spieler)
 - Zahlung der Eintrittsgebühr
 - Automatischer Start bei ausreichender Teilnehmerzahl
 
 ### 2. Commit-Phase
+
 - Spieler wählen geheime Zahl (0-1000)
 - Eingabe eines Salt-Wertes für Verschlüsselung
 - Commitment der verschlüsselten Zahl an Blockchain
 
-### 3. Reveal-Phase  
+### 3. Reveal-Phase
+
 - Spieler enthüllen ihre ursprünglichen Zahlen
 - Verifikation gegen gespeicherte Commits
 - Automatische Disqualifikation bei falschen Reveals
 
 ### 4. Auswertungsphase
+
 - Berechnung des Durchschnitts aller Zahlen
 - Ermittlung von 2/3 des Durchschnitts
 - Bestimmung des Gewinners (nächste Zahl)
 
 ### 5. Ergebnisphase
+
 - Anzeige aller Ergebnisse und Gewinner
 - Automatische Preisverteilung
 - Option für neues Spiel
-
-## 🧪 Tests ausführen
-
-```bash
-# Smart Contract Tests
-npx hardhat test
-
-# Frontend Tests (falls implementiert)
-cd Frontend && npm run test
-```
 
 ## 📊 Beispiel-Spielverlauf
 
@@ -237,6 +284,7 @@ Distanzen zum Zielwert (311):
 ## 🤝 Entwicklung & Beitrag
 
 ### Git-Workflow
+
 ```bash
 # Änderungen holen
 git pull
@@ -251,12 +299,6 @@ git commit -m "Add: Neue Funktion implementiert"
 # Push und Pull Request
 git push origin feature/neue-funktion
 ```
-
-### Code-Standards
-- **TypeScript** für alle neuen Dateien
-- **ESLint** Regeln befolgen
-- **Commit-Messages** im Format: `Type: Beschreibung`
-- **Tests** für neue Funktionen schreiben
 
 ## 📄 Lizenz
 

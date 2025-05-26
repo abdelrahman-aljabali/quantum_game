@@ -1,10 +1,10 @@
 /**
  * @fileoverview ResultsVisualizer Component - Game results display and winner announcement
- * 
+ *
  * PURPOSE:
  * Displays comprehensive game results including mathematical calculations,
  * winner announcement, and prize withdrawal functionality.
- * 
+ *
  * KEY FEATURES:
  * - Mathematical breakdown (submissions, average, 2/3 calculation)
  * - Winner announcement with address formatting
@@ -97,7 +97,7 @@ const ResultsVisualizer: React.FC<ResultsVisualizerProps> = ({
   };
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-gray-900 to-black p-6 rounded-xl border border-cyan-600/30 shadow-lg shadow-cyan-500/20">
+    <div className="w-full h-full flex flex-col items-center justify-center">
       {/* Calculation */}
       <Card className="w-full max-w-2xl bg-gray-800/50 border-gray-700 backdrop-blur-sm mb-8">
         <CardContent>

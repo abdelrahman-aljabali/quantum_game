@@ -37,10 +37,10 @@ contract GameFactory is Ownable {
     uint256 public defaultMinPlayers         = 3;          // Minimum to start
     uint256 public defaultMaxPlayers         = 60;         // Maximum capacity  
     uint256 public defaultCommitDuration     = 120;        // Commit phase (seconds)
-    uint256 public defaultRevealDuration     = 100;        // Reveal phase (seconds)
+    uint256 public defaultRevealDuration     = 120;        // Reveal phase (seconds)
     uint256 public defaultEntryFee           = 0.01 ether; // Player entry cost
     uint256 public defaultServiceFeePercent  = 5;          // Platform fee (%)
-    uint256 public defaultAutoStartDelay     = 30;         // Grace period (seconds)
+    uint256 public defaultAutoStartDelay     = 60;         // Grace period (seconds)
 
     event GameCreated(address indexed gameAddress, uint256 indexed gameId);
     event CurrentGameSet(address indexed gameAddress);
