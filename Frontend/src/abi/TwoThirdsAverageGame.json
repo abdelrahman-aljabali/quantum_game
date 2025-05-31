@@ -72,15 +72,15 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
+        "internalType": "uint16",
         "name": "average",
-        "type": "uint256"
+        "type": "uint16"
       },
       {
         "indexed": false,
-        "internalType": "uint256",
+        "internalType": "uint16",
         "name": "twoThirdsAverage",
-        "type": "uint256"
+        "type": "uint16"
       },
       {
         "indexed": false,
@@ -248,9 +248,9 @@
     "name": "average",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "uint16",
         "name": "",
-        "type": "uint256"
+        "type": "uint16"
       }
     ],
     "stateMutability": "view",
@@ -361,14 +361,14 @@
       {
         "components": [
           {
-            "internalType": "uint256",
+            "internalType": "uint16",
             "name": "average",
-            "type": "uint256"
+            "type": "uint16"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint16",
             "name": "twoThirdsAverage",
-            "type": "uint256"
+            "type": "uint16"
           },
           {
             "internalType": "address",
@@ -527,9 +527,9 @@
         "type": "bytes32"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint16",
         "name": "revealedGuess",
-        "type": "uint256"
+        "type": "uint16"
       },
       {
         "internalType": "bool",
@@ -632,9 +632,9 @@
     "name": "twoThirdsAverage",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "uint16",
         "name": "",
-        "type": "uint256"
+        "type": "uint16"
       }
     ],
     "stateMutability": "view",

@@ -684,7 +684,7 @@ export interface TwoThirdsAverageGame extends BaseContract {
   >;
 
   filters: {
-    "GameEnded(uint256,uint256,address,uint256)": TypedContractEvent<
+    "GameEnded(uint16,uint16,address,uint256)": TypedContractEvent<
       GameEndedEvent.InputTuple,
       GameEndedEvent.OutputTuple,
       GameEndedEvent.OutputObject
