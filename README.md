@@ -77,8 +77,8 @@ function revealNumber(uint256 number, uint256 salt) external;
 ### 1. Repository klonen
 
 ```bash
-git clone https://github.com/adrianjustdoit58/quantum_game_DApp.git
-cd quantum_game_DApp
+git clone https://github.com/abdelrahman-aljabali/quantum_game.git
+cd quantum_game
 ```
 
 ### 2. Backend Setup (Smart Contracts)
@@ -140,10 +140,10 @@ npm run dev
 ```
 **Owner Account:**
 
-```
-
 Account #0: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 (10000 ETH)
 Private Key: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+
+```
 
 ```
 **Withdraw Profts:**

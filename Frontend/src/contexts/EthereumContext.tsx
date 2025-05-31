@@ -218,7 +218,7 @@ export const EthereumProvider: React.FC<{ children: ReactNode }> = ({
     if (isConnected) initContracts();
   }, [provider, signer, isConnected]);
 
-  // --- Fetch game state ---
+  // Updated fetchGameState (unchanged from your original, but included here for completeness)
   const fetchGameState = async () => {
     if (!currentGameContract) return;
     try {
@@ -231,7 +231,6 @@ export const EthereumProvider: React.FC<{ children: ReactNode }> = ({
       setPlayerCount(Number(rawCount.toString()));
 
       // Time remaining logic
-      // AFTER: one line of truth from chain
       if (
         phaseVal === GamePhase.GAME_STARTING ||
         phaseVal === GamePhase.COMMIT_PHASE ||
@@ -318,37 +317,66 @@ export const EthereumProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  // --- Event listeners & polling ---
+  // Updated polling + auto‐finalize useEffect
   useEffect(() => {
     if (!currentGameContract) return;
-    const onPhase = (_from: any, to: any) => {
-      setGamePhase(Number(to.toString()));
-      fetchGameState();
-    };
-    const onPlayerJoined = () => fetchGameState();
+
+    let didAutoFinalize = false;
+
+    // event‐driven updates
+    const onJoined = () => fetchGameState();
     const onCommitted = () => fetchGameState();
     const onRevealed = () => fetchGameState();
-    const onEnd = () => fetchGameState();
+    const onEnded = () => fetchGameState();
     const onWithdraw = () => fetchGameState();
 
-    currentGameContract.on("PhaseAdvanced", onPhase);
-    currentGameContract.on("PlayerJoined", onPlayerJoined);
+    currentGameContract.on("PlayerJoined", onJoined);
     currentGameContract.on("GuessCommitted", onCommitted);
     currentGameContract.on("GuessRevealed", onRevealed);
-    currentGameContract.on("GameEnded", onEnd);
+    currentGameContract.on("GameEnded", onEnded);
     currentGameContract.on("Withdrawal", onWithdraw);
 
-    const interval = setInterval(fetchGameState, 5000);
+    // polling + one‐time auto‐finalize
+    const tick = async () => {
+      try {
+        // Always refresh on‐chain state first
+        await fetchGameState();
+
+        // If contract is now phase 4 (EVALUATING_RESULTS) and we haven’t finalized yet:
+        if (gamePhase === GamePhase.EVALUATING_RESULTS && !didAutoFinalize) {
+          didAutoFinalize = true;
+          console.log("🔄 Detected phase 4. Calling finalizeGame()…");
+          try {
+            // This will prompt MetaMask exactly once
+            const tx = await currentGameContract.finalizeGame();
+            console.log("   → finalizeGame() TX sent:", tx.hash);
+            await tx.wait();
+            console.log("   → finalizeGame() mined. Phase is now 5.");
+            // After finalizing on‐chain, re‐fetch so React sees phase === GAME_ENDED
+            await fetchGameState();
+          } catch (e) {
+            console.error("❌ finalizeGame() failed or was rejected:", e);
+            // Leave didAutoFinalize = true so we don't keep re‐prompting
+          }
+        }
+      } catch (e) {
+        console.error("Error in auto‐finalize tick():", e);
+      }
+    };
+
+    // Kick off immediately, then every 5 seconds
+    tick();
+    const iv = setInterval(tick, 5_000);
+
     return () => {
-      clearInterval(interval);
-      currentGameContract.off("PhaseAdvanced", onPhase);
-      currentGameContract.off("PlayerJoined", onPlayerJoined);
+      clearInterval(iv);
+      currentGameContract.off("PlayerJoined", onJoined);
       currentGameContract.off("GuessCommitted", onCommitted);
       currentGameContract.off("GuessRevealed", onRevealed);
-      currentGameContract.off("GameEnded", onEnd);
+      currentGameContract.off("GameEnded", onEnded);
       currentGameContract.off("Withdrawal", onWithdraw);
     };
-  }, [currentGameContract]);
+  }, [currentGameContract, gamePhase]);
 
   // --- Wallet event listeners ---
   useEffect(() => {

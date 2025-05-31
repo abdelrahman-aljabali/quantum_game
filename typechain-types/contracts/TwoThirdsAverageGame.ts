@@ -23,25 +23,44 @@ import type {
   TypedContractMethod,
 } from "../common";
 
+export declare namespace TwoThirdsAverageGame {
+  export type ResultsStruct = {
+    average: BigNumberish;
+    twoThirdsAverage: BigNumberish;
+    winner: AddressLike;
+    prize: BigNumberish;
+    serviceFee: BigNumberish;
+  };
+
+  export type ResultsStructOutput = [
+    average: bigint,
+    twoThirdsAverage: bigint,
+    winner: string,
+    prize: bigint,
+    serviceFee: bigint
+  ] & {
+    average: bigint;
+    twoThirdsAverage: bigint;
+    winner: string;
+    prize: bigint;
+    serviceFee: bigint;
+  };
+}
+
 export interface TwoThirdsAverageGameInterface extends Interface {
   getFunction(
     nameOrSignature:
       | "autoStartDelay"
       | "average"
-      | "catchUp"
       | "commitDuration"
-      | "commitEndTime"
       | "commitGuess"
       | "currentPhase"
       | "entryFee"
       | "finalizeGame"
-      | "getCommitEndTime"
-      | "getPendingWithdrawal"
       | "getPhase"
       | "getPlayerCount"
       | "getPlayers"
-      | "getPrizePool"
-      | "getRevealEndTime"
+      | "getResults"
       | "getTimeRemaining"
       | "joinGame"
       | "leaveGame"
@@ -50,13 +69,11 @@ export interface TwoThirdsAverageGameInterface extends Interface {
       | "minPlayersReachedTime"
       | "owner"
       | "pendingWithdrawals"
-      | "phaseStartTime"
       | "playerAddresses"
       | "players"
       | "prizePool"
       | "renounceOwnership"
       | "revealDuration"
-      | "revealEndTime"
       | "revealGuess"
       | "serviceFeePercent"
       | "transferOwnership"
@@ -67,15 +84,12 @@ export interface TwoThirdsAverageGameInterface extends Interface {
 
   getEvent(
     nameOrSignatureOrTopic:
-      | "CommitPhaseStarted"
       | "GameEnded"
       | "GameStarting"
       | "GuessCommitted"
       | "GuessRevealed"
       | "OwnershipTransferred"
-      | "PhaseAdvanced"
       | "PlayerJoined"
-      | "RevealPhaseStarted"
       | "Withdrawal"
   ): EventFragment;
 
@@ -84,13 +98,8 @@ export interface TwoThirdsAverageGameInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "average", values?: undefined): string;
-  encodeFunctionData(functionFragment: "catchUp", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "commitDuration",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "commitEndTime",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -106,14 +115,6 @@ export interface TwoThirdsAverageGameInterface extends Interface {
     functionFragment: "finalizeGame",
     values?: undefined
   ): string;
-  encodeFunctionData(
-    functionFragment: "getCommitEndTime",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getPendingWithdrawal",
-    values: [AddressLike]
-  ): string;
   encodeFunctionData(functionFragment: "getPhase", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "getPlayerCount",
@@ -124,11 +125,7 @@ export interface TwoThirdsAverageGameInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getPrizePool",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getRevealEndTime",
+    functionFragment: "getResults",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -155,10 +152,6 @@ export interface TwoThirdsAverageGameInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "phaseStartTime",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "playerAddresses",
     values: [BigNumberish]
   ): string;
@@ -173,10 +166,6 @@ export interface TwoThirdsAverageGameInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "revealDuration",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "revealEndTime",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -203,13 +192,8 @@ export interface TwoThirdsAverageGameInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "average", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "catchUp", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "commitDuration",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "commitEndTime",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -225,28 +209,13 @@ export interface TwoThirdsAverageGameInterface extends Interface {
     functionFragment: "finalizeGame",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "getCommitEndTime",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getPendingWithdrawal",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "getPhase", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getPlayerCount",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getPlayers", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "getPrizePool",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getRevealEndTime",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "getResults", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getTimeRemaining",
     data: BytesLike
@@ -265,10 +234,6 @@ export interface TwoThirdsAverageGameInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "phaseStartTime",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "playerAddresses",
     data: BytesLike
   ): Result;
@@ -280,10 +245,6 @@ export interface TwoThirdsAverageGameInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "revealDuration",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "revealEndTime",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -304,19 +265,6 @@ export interface TwoThirdsAverageGameInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "winner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
-}
-
-export namespace CommitPhaseStartedEvent {
-  export type InputTuple = [startTime: BigNumberish, endTime: BigNumberish];
-  export type OutputTuple = [startTime: bigint, endTime: bigint];
-  export interface OutputObject {
-    startTime: bigint;
-    endTime: bigint;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace GameEndedEvent {
@@ -413,43 +361,12 @@ export namespace OwnershipTransferredEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace PhaseAdvancedEvent {
-  export type InputTuple = [
-    from: BigNumberish,
-    to: BigNumberish,
-    timestamp: BigNumberish
-  ];
-  export type OutputTuple = [from: bigint, to: bigint, timestamp: bigint];
-  export interface OutputObject {
-    from: bigint;
-    to: bigint;
-    timestamp: bigint;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
 export namespace PlayerJoinedEvent {
   export type InputTuple = [player: AddressLike, entryFeePaid: BigNumberish];
   export type OutputTuple = [player: string, entryFeePaid: bigint];
   export interface OutputObject {
     player: string;
     entryFeePaid: bigint;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace RevealPhaseStartedEvent {
-  export type InputTuple = [startTime: BigNumberish, endTime: BigNumberish];
-  export type OutputTuple = [startTime: bigint, endTime: bigint];
-  export interface OutputObject {
-    startTime: bigint;
-    endTime: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -517,11 +434,7 @@ export interface TwoThirdsAverageGame extends BaseContract {
 
   average: TypedContractMethod<[], [bigint], "view">;
 
-  catchUp: TypedContractMethod<[], [void], "nonpayable">;
-
   commitDuration: TypedContractMethod<[], [bigint], "view">;
-
-  commitEndTime: TypedContractMethod<[], [bigint], "view">;
 
   commitGuess: TypedContractMethod<[hash: BytesLike], [void], "nonpayable">;
 
@@ -531,23 +444,17 @@ export interface TwoThirdsAverageGame extends BaseContract {
 
   finalizeGame: TypedContractMethod<[], [void], "nonpayable">;
 
-  getCommitEndTime: TypedContractMethod<[], [bigint], "view">;
-
-  getPendingWithdrawal: TypedContractMethod<
-    [player: AddressLike],
-    [bigint],
-    "view"
-  >;
-
   getPhase: TypedContractMethod<[], [bigint], "view">;
 
   getPlayerCount: TypedContractMethod<[], [bigint], "view">;
 
   getPlayers: TypedContractMethod<[], [string[]], "view">;
 
-  getPrizePool: TypedContractMethod<[], [bigint], "view">;
-
-  getRevealEndTime: TypedContractMethod<[], [bigint], "view">;
+  getResults: TypedContractMethod<
+    [],
+    [TwoThirdsAverageGame.ResultsStructOutput],
+    "view"
+  >;
 
   getTimeRemaining: TypedContractMethod<[], [bigint], "view">;
 
@@ -568,8 +475,6 @@ export interface TwoThirdsAverageGame extends BaseContract {
     [bigint],
     "view"
   >;
-
-  phaseStartTime: TypedContractMethod<[arg0: BigNumberish], [bigint], "view">;
 
   playerAddresses: TypedContractMethod<[arg0: BigNumberish], [string], "view">;
 
@@ -592,8 +497,6 @@ export interface TwoThirdsAverageGame extends BaseContract {
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
   revealDuration: TypedContractMethod<[], [bigint], "view">;
-
-  revealEndTime: TypedContractMethod<[], [bigint], "view">;
 
   revealGuess: TypedContractMethod<
     [guess: BigNumberish, salt: BytesLike],
@@ -626,13 +529,7 @@ export interface TwoThirdsAverageGame extends BaseContract {
     nameOrSignature: "average"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
-    nameOrSignature: "catchUp"
-  ): TypedContractMethod<[], [void], "nonpayable">;
-  getFunction(
     nameOrSignature: "commitDuration"
-  ): TypedContractMethod<[], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "commitEndTime"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "commitGuess"
@@ -647,12 +544,6 @@ export interface TwoThirdsAverageGame extends BaseContract {
     nameOrSignature: "finalizeGame"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "getCommitEndTime"
-  ): TypedContractMethod<[], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "getPendingWithdrawal"
-  ): TypedContractMethod<[player: AddressLike], [bigint], "view">;
-  getFunction(
     nameOrSignature: "getPhase"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
@@ -662,11 +553,12 @@ export interface TwoThirdsAverageGame extends BaseContract {
     nameOrSignature: "getPlayers"
   ): TypedContractMethod<[], [string[]], "view">;
   getFunction(
-    nameOrSignature: "getPrizePool"
-  ): TypedContractMethod<[], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "getRevealEndTime"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: "getResults"
+  ): TypedContractMethod<
+    [],
+    [TwoThirdsAverageGame.ResultsStructOutput],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "getTimeRemaining"
   ): TypedContractMethod<[], [bigint], "view">;
@@ -691,9 +583,6 @@ export interface TwoThirdsAverageGame extends BaseContract {
   getFunction(
     nameOrSignature: "pendingWithdrawals"
   ): TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "phaseStartTime"
-  ): TypedContractMethod<[arg0: BigNumberish], [bigint], "view">;
   getFunction(
     nameOrSignature: "playerAddresses"
   ): TypedContractMethod<[arg0: BigNumberish], [string], "view">;
@@ -722,9 +611,6 @@ export interface TwoThirdsAverageGame extends BaseContract {
     nameOrSignature: "revealDuration"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
-    nameOrSignature: "revealEndTime"
-  ): TypedContractMethod<[], [bigint], "view">;
-  getFunction(
     nameOrSignature: "revealGuess"
   ): TypedContractMethod<
     [guess: BigNumberish, salt: BytesLike],
@@ -747,13 +633,6 @@ export interface TwoThirdsAverageGame extends BaseContract {
     nameOrSignature: "withdraw"
   ): TypedContractMethod<[], [void], "nonpayable">;
 
-  getEvent(
-    key: "CommitPhaseStarted"
-  ): TypedContractEvent<
-    CommitPhaseStartedEvent.InputTuple,
-    CommitPhaseStartedEvent.OutputTuple,
-    CommitPhaseStartedEvent.OutputObject
-  >;
   getEvent(
     key: "GameEnded"
   ): TypedContractEvent<
@@ -790,25 +669,11 @@ export interface TwoThirdsAverageGame extends BaseContract {
     OwnershipTransferredEvent.OutputObject
   >;
   getEvent(
-    key: "PhaseAdvanced"
-  ): TypedContractEvent<
-    PhaseAdvancedEvent.InputTuple,
-    PhaseAdvancedEvent.OutputTuple,
-    PhaseAdvancedEvent.OutputObject
-  >;
-  getEvent(
     key: "PlayerJoined"
   ): TypedContractEvent<
     PlayerJoinedEvent.InputTuple,
     PlayerJoinedEvent.OutputTuple,
     PlayerJoinedEvent.OutputObject
-  >;
-  getEvent(
-    key: "RevealPhaseStarted"
-  ): TypedContractEvent<
-    RevealPhaseStartedEvent.InputTuple,
-    RevealPhaseStartedEvent.OutputTuple,
-    RevealPhaseStartedEvent.OutputObject
   >;
   getEvent(
     key: "Withdrawal"
@@ -819,17 +684,6 @@ export interface TwoThirdsAverageGame extends BaseContract {
   >;
 
   filters: {
-    "CommitPhaseStarted(uint256,uint256)": TypedContractEvent<
-      CommitPhaseStartedEvent.InputTuple,
-      CommitPhaseStartedEvent.OutputTuple,
-      CommitPhaseStartedEvent.OutputObject
-    >;
-    CommitPhaseStarted: TypedContractEvent<
-      CommitPhaseStartedEvent.InputTuple,
-      CommitPhaseStartedEvent.OutputTuple,
-      CommitPhaseStartedEvent.OutputObject
-    >;
-
     "GameEnded(uint256,uint256,address,uint256)": TypedContractEvent<
       GameEndedEvent.InputTuple,
       GameEndedEvent.OutputTuple,
@@ -885,17 +739,6 @@ export interface TwoThirdsAverageGame extends BaseContract {
       OwnershipTransferredEvent.OutputObject
     >;
 
-    "PhaseAdvanced(uint8,uint8,uint256)": TypedContractEvent<
-      PhaseAdvancedEvent.InputTuple,
-      PhaseAdvancedEvent.OutputTuple,
-      PhaseAdvancedEvent.OutputObject
-    >;
-    PhaseAdvanced: TypedContractEvent<
-      PhaseAdvancedEvent.InputTuple,
-      PhaseAdvancedEvent.OutputTuple,
-      PhaseAdvancedEvent.OutputObject
-    >;
-
     "PlayerJoined(address,uint256)": TypedContractEvent<
       PlayerJoinedEvent.InputTuple,
       PlayerJoinedEvent.OutputTuple,
@@ -905,17 +748,6 @@ export interface TwoThirdsAverageGame extends BaseContract {
       PlayerJoinedEvent.InputTuple,
       PlayerJoinedEvent.OutputTuple,
       PlayerJoinedEvent.OutputObject
-    >;
-
-    "RevealPhaseStarted(uint256,uint256)": TypedContractEvent<
-      RevealPhaseStartedEvent.InputTuple,
-      RevealPhaseStartedEvent.OutputTuple,
-      RevealPhaseStartedEvent.OutputObject
-    >;
-    RevealPhaseStarted: TypedContractEvent<
-      RevealPhaseStartedEvent.InputTuple,
-      RevealPhaseStartedEvent.OutputTuple,
-      RevealPhaseStartedEvent.OutputObject
     >;
 
     "Withdrawal(address,uint256)": TypedContractEvent<

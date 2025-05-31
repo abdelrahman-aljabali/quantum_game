@@ -9,7 +9,7 @@
  * - Mathematical breakdown (submissions, average, 2/3 calculation)
  * - Winner announcement with address formatting
  * - Prize withdrawal for winners
- * - Play again functionality for new games
+ * - Play again functionality for new games (via resetGameUI)
  * - Responsive grid layout for result metrics
  */
 
@@ -21,12 +21,12 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, Trophy, BarChart3, RefreshCw, Coins } from "lucide-react";
 import { useEthereum } from "@/contexts/EthereumContext";
 
+// ─── ➀ The props interface: no onPlayAgain here, just exactly what you need ─────────────────
 interface ResultsVisualizerProps {
   submissions?: number[];
   winningNumber?: number;
   winner?: string;
   prizeAmount?: string;
-  onPlayAgain?: () => void;
 }
 
 const ResultsVisualizer: React.FC<ResultsVisualizerProps> = ({
@@ -34,8 +34,8 @@ const ResultsVisualizer: React.FC<ResultsVisualizerProps> = ({
   winningNumber: propWinningNumber,
   winner: propWinner,
   prizeAmount: propPrizeAmount,
-  onPlayAgain,
 }) => {
+  // ─── ➁ Pull everything you need from context here, *inside* the component ─────────────────────
   const {
     submissions: contextSubmissions,
     winningNumber: contextWinningNumber,
@@ -43,16 +43,21 @@ const ResultsVisualizer: React.FC<ResultsVisualizerProps> = ({
     prizeAmount: contextPrizeAmount,
     account,
     currentGameContract,
-    playerCount,
+    gameFactoryContract,
+    resetGameUI, // ← now this is valid, because it’s inside the component
+    refreshGameState,
   } = useEthereum();
 
+  // ─── ➂ Merge “prop vs. context” values (exactly how you had it) ─────────────────────────────
   const submissions = propSubmissions ?? contextSubmissions ?? [];
   const winningNumber = propWinningNumber ?? contextWinningNumber ?? 0;
   const winner = propWinner ?? contextWinner ?? "";
   const prizeAmount = propPrizeAmount ?? contextPrizeAmount ?? "0 ETH";
+
+  // Track whether this address has already withdrawn
   const [hasWithdrawn, setHasWithdrawn] = useState(false);
 
-  // Derived values
+  // ─── ➃ Compute average, two-thirds, closest submission ─────────────────────────────────────
   const average =
     submissions.length > 0
       ? submissions.reduce((a, b) => a + b, 0) / submissions.length
@@ -67,12 +72,14 @@ const ResultsVisualizer: React.FC<ResultsVisualizerProps> = ({
   );
 
   useEffect(() => {
-    // Placeholder: animations skipped
+    // (Optional) any animations or side-effects you want
   }, []);
 
+  // ─── ➄ Helper to shorten addresses for display ──────────────────────────────────────────────
   const formatAddress = (addr: string) =>
-    addr.length > 10 ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : addr;
+    addr.length > 10 ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : addr;
 
+  // ─── ➅ Prize-withdrawal handler (unchanged from before) ─────────────────────────────────────
   const withdrawPrize = async () => {
     if (!currentGameContract) return;
     try {
@@ -84,7 +91,7 @@ const ResultsVisualizer: React.FC<ResultsVisualizerProps> = ({
       const tx = await currentGameContract.withdraw();
       await tx.wait();
       alert("Prize withdrawn successfully!");
-      setHasWithdrawn(true); // ✅ mark as withdrawn
+      setHasWithdrawn(true);
     } catch (e) {
       console.error(e);
       alert("Failed to withdraw prize");
@@ -96,9 +103,41 @@ const ResultsVisualizer: React.FC<ResultsVisualizerProps> = ({
     }
   };
 
+  const handlePlayAgain = async () => {
+    if (!gameFactoryContract) {
+      alert("Factory contract not loaded. Cannot create a new game.");
+      return;
+    }
+
+    try {
+      // ➀ Ask the factory to deploy a fresh TwoThirdsAverageGame:
+      const tx = await gameFactoryContract.createGame();
+      console.log("⏳ Waiting for createGame() tx to be mined…");
+      await tx.wait();
+      console.log("✅ New game deployed by factory.");
+
+      // ➁ Once mined, clear out the old game UI state:
+      await resetGameUI();
+      console.log(
+        "🔁 Front-end state has been reset and is now pointing at the new game."
+      );
+
+      // ➂ Immediately re-fetch the new game’s state so React flips back into “Waiting”:
+      await refreshGameState();
+      console.log(
+        "🔄 Fetched new game state. UI should now show the join‐game screen."
+      );
+    } catch (e) {
+      console.error("Failed to create new game:", e);
+      alert("Could not start a new game. Check console for details.");
+    }
+  };
+
   return (
     <div className="w-full h-full flex flex-col items-center justify-center">
-      {/* Calculation */}
+      {/* ───────────────────────────────────────────────────────────────────────
+          Results Calculation Card
+      ─────────────────────────────────────────────────────────────────────── */}
       <Card className="w-full max-w-2xl bg-gray-800/50 border-gray-700 backdrop-blur-sm mb-8">
         <CardContent>
           <h3 className="text-xl font-bold text-cyan-300 flex items-center mb-4">
@@ -132,7 +171,9 @@ const ResultsVisualizer: React.FC<ResultsVisualizerProps> = ({
         </CardContent>
       </Card>
 
-      {/* Winner */}
+      {/* ───────────────────────────────────────────────────────────────────────
+          Winner Announcement Card
+      ─────────────────────────────────────────────────────────────────────── */}
       <div className="w-full max-w-2xl">
         <Card className="bg-gradient-to-r from-yellow-900/70 to-amber-900/70 border-yellow-600 overflow-hidden">
           <CardContent className="p-6 relative">
@@ -166,13 +207,16 @@ const ResultsVisualizer: React.FC<ResultsVisualizerProps> = ({
                   </div>
                 </div>
               </div>
+
+              {/* ─── If *this* account is the winner ───────────────────────────────── */}
               {winner.toLowerCase() === account?.toLowerCase() ? (
                 hasWithdrawn ? (
                   <Button
-                    onClick={onPlayAgain}
+                    onClick={handlePlayAgain}
                     className="bg-yellow-600 hover:bg-yellow-500 text-white flex items-center gap-2"
                   >
-                    Play Again <RefreshCw className="h-4 w-4" />
+                    Create a New Game & Play Again{" "}
+                    <RefreshCw className="h-4 w-4" />
                   </Button>
                 ) : (
                   <Button
@@ -184,11 +228,13 @@ const ResultsVisualizer: React.FC<ResultsVisualizerProps> = ({
                   </Button>
                 )
               ) : (
+                /* ─── If not the winner, still offer “Play Again” ─────────────────── */
                 <Button
-                  onClick={onPlayAgain}
+                  onClick={handlePlayAgain}
                   className="bg-yellow-600 hover:bg-yellow-500 text-white flex items-center gap-2"
                 >
-                  Play Again <RefreshCw className="h-4 w-4" />
+                  Create a New Game & Play Again{" "}
+                  <RefreshCw className="h-4 w-4" />
                 </Button>
               )}
             </div>

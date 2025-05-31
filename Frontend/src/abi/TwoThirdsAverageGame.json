@@ -73,25 +73,6 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "startTime",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "endTime",
-        "type": "uint256"
-      }
-    ],
-    "name": "CommitPhaseStarted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
         "name": "average",
         "type": "uint256"
       },
@@ -215,31 +196,6 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "internalType": "enum TwoThirdsAverageGame.GamePhase",
-        "name": "from",
-        "type": "uint8"
-      },
-      {
-        "indexed": false,
-        "internalType": "enum TwoThirdsAverageGame.GamePhase",
-        "name": "to",
-        "type": "uint8"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "timestamp",
-        "type": "uint256"
-      }
-    ],
-    "name": "PhaseAdvanced",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
         "indexed": true,
         "internalType": "address",
         "name": "player",
@@ -253,25 +209,6 @@
       }
     ],
     "name": "PlayerJoined",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "startTime",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "endTime",
-        "type": "uint256"
-      }
-    ],
-    "name": "RevealPhaseStarted",
     "type": "event"
   },
   {
@@ -321,27 +258,7 @@
   },
   {
     "inputs": [],
-    "name": "catchUp",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "commitDuration",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "commitEndTime",
     "outputs": [
       {
         "internalType": "uint256",
@@ -400,38 +317,6 @@
   },
   {
     "inputs": [],
-    "name": "getCommitEndTime",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "player",
-        "type": "address"
-      }
-    ],
-    "name": "getPendingWithdrawal",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "getPhase",
     "outputs": [
       {
@@ -471,25 +356,39 @@
   },
   {
     "inputs": [],
-    "name": "getPrizePool",
+    "name": "getResults",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getRevealEndTime",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "average",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "twoThirdsAverage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "winner",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "prize",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "serviceFee",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct TwoThirdsAverageGame.Results",
+        "name": "r",
+        "type": "tuple"
       }
     ],
     "stateMutability": "view",
@@ -596,25 +495,6 @@
   {
     "inputs": [
       {
-        "internalType": "enum TwoThirdsAverageGame.GamePhase",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "name": "phaseStartTime",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
@@ -693,19 +573,6 @@
   {
     "inputs": [],
     "name": "revealDuration",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "revealEndTime",
     "outputs": [
       {
         "internalType": "uint256",

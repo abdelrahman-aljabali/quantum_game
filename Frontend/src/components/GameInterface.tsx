@@ -100,27 +100,6 @@ const GameInterface: React.FC<GameInterfaceProps> = ({ onSubmitNumber }) => {
     }, 500); // ⏱ Adjust if needed
   };
 
-  // 🚀 auto‑advance on zero
-  useEffect(() => {
-    // only try to auto‑advance once per phase
-    const shouldAdvance =
-      timeRemaining <= 0 &&
-      (gamePhase === GamePhase.GAME_STARTING ||
-        gamePhase === GamePhase.COMMIT_PHASE ||
-        gamePhase === GamePhase.REVEAL_PHASE) &&
-      !hasAutoAdvanced;
-
-    if (shouldAdvance) {
-      advancePhase();
-      setHasAutoAdvanced(true);
-    }
-
-    // reset the flag if the timer ever goes back above zero
-    if (timeRemaining > 0 && hasAutoAdvanced) {
-      setHasAutoAdvanced(false);
-    }
-  }, [timeRemaining, gamePhase, advancePhase, hasAutoAdvanced]);
-
   const handleSubmit = async () => {
     if (selectedNumber === null) {
       console.error("No number selected");
@@ -359,7 +338,6 @@ const GameInterface: React.FC<GameInterfaceProps> = ({ onSubmitNumber }) => {
                 winningNumber={winningNumber}
                 winner={winner}
                 prizeAmount={prizeAmount}
-                onPlayAgain={handlePlayAgain}
               />
             </motion.div>
           </div>
