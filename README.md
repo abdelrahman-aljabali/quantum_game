@@ -123,7 +123,7 @@ npm run dev
    - **Chain ID**: `31337`
    - **Currency**: `GO`
 
-2. **Test-Accounts importieren**:
+2. **Test-Accounts in verschiedenen Browsern zu importieren**:
 
    ```
    Account #1: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8 (10000 ETH)
@@ -164,6 +164,7 @@ npx ts-node scripts/withdrawOwnerFees.ts
 
 ```bash
 # Terminal 1: Blockchain
+npm install
 npx hardhat node
 
 # Terminal 2: Contracts deployen
