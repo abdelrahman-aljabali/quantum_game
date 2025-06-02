@@ -91,8 +91,6 @@ npm install
 npx hardhat node
 
 # Contracts deployen (neues Terminal)
-npx hardhat clean
-
 npx hardhat compile
 
 npm run deploy
@@ -168,7 +166,6 @@ npm install
 npx hardhat node
 
 # Terminal 2: Contracts deployen
-npx hardhat clean
 npx hardhat compile
 npm run deploy
 npm run export-abi
