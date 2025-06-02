@@ -88,7 +88,7 @@ contract GameFactory is Ownable {
      * 2. Child contract deployment via `new TwoThirdsAverageGame(...)`
      * 3. Registry insertion (`games.push(...)` and `gameExists[...] = true`)
      * 4. Transfer of ownership of the child game to the factory owner
-     * 5. Setting `currentGame` if this is the very first game deployed
+     * 5. Always update `currentGame` to the newest game
      */
     function createCustomGame(
         uint16 _minPlayers,
@@ -132,11 +132,9 @@ contract GameFactory is Ownable {
         //    Ensures that any service fees collected by the child game go to the factory owner
         game.transferOwnership(owner());
 
-        // 4. If this is the first-ever game, set it as currentGame for the frontend
-        if (currentGame == address(0)) {
-            currentGame = addr;        
-            emit CurrentGameSet(addr);
-        }
+        // 4. ALWAYS update currentGame to point at the newest game
+        currentGame = addr;
+        emit CurrentGameSet(addr);
 
         // 5. Emit GameCreated event, providing the game address and its index
         emit GameCreated(addr, idx);
@@ -161,7 +159,7 @@ contract GameFactory is Ownable {
      * 1. Deploy child game with default parameters
      * 2. Register it in the registry (`games` array + `gameExists` mapping)
      * 3. Transfer ownership of the child to factory owner (so fees flow correctly)
-     * 4. If first game, set `currentGame`
+     * 4. Always update `currentGame` to newest game
      * 5. Emit `GameCreated`
      */
     function createGame() external returns (address) {
@@ -185,11 +183,9 @@ contract GameFactory is Ownable {
         // 3. Transfer ownership of new game to factory owner
         game.transferOwnership(owner());
 
-        // 4. If this is the first-ever game, mark it as current
-        if (currentGame == address(0)) {
-            currentGame = addr;
-            emit CurrentGameSet(addr);
-        }
+        // 4. ALWAYS update currentGame to point at the newest game
+        currentGame = addr;
+        emit CurrentGameSet(addr);
 
         // 5. Emit GameCreated event
         emit GameCreated(addr, idx);
